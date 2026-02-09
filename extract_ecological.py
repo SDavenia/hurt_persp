@@ -1,5 +1,5 @@
 import pandas as pd
-from utils.data import StandardLexicon
+from utils.data import StandardLexicon, StandardDataset
 
 
 
@@ -17,7 +17,7 @@ RESULTS DATAFRAME:
 
 lexicon_path = 'data/lexicon/hurtlexcore_EN.tsv'
 dataset_paths = {
-    # dataset_id: dataset_path
+    'mhs': 'data/datasets/mhs/data.csv'
 }
 
 def main():
@@ -27,11 +27,11 @@ def main():
    
 
     ########### Load and preprocess the datasets ###########
+    for dataset_id, dataset_path in dataset_paths.items():
+        dataset = StandardDataset(dataset_id=dataset_id, dataset_path=dataset_path)
+        dataset.print_info()
+        dataset.dataset.to_csv(f'{dataset_id}_processed.csv', index=False)  # Save processed dataset for inspection
 
-
-
-
-    
 
 if __name__ == "__main__":
     main()

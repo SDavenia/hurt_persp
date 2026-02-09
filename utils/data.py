@@ -8,12 +8,48 @@ import nltk
 import emoji
 import pandas as pd
 
-from nltk.stem import WordNetLemmatizer
-nltk.download('wordnet')
-nltk.download('omw-1.4')
+from nltk.stem import WordNetLemmatizer, PorterStemmer
+from nltk.tokenize import word_tokenize
+from nltk import pos_tag
+from nltk.corpus import wordnet as wn
+
+nltk.download("punkt")
+nltk.download("averaged_perceptron_tagger")
+nltk.download("wordnet")
+nltk.download("omw-1.4")
 
 # Dictionary containing text column name, label column name and sociodemographics column name for each dataset.
+# Sociodemographics columns is either:
+# - a single column 
+# - a dict of columns with the trait of interest and the column name 
 dataset_info = {
+    'mhs': {
+        'text_column': 'text',
+        'label_column': 'hate_speech_score',
+        
+        # For now keep only a simplified one to see if code works
+        'sociodemographics_columns': {
+            'gender': 'annotator_gender',
+            'education': 'annotator_educ',
+            'income': 'annotator_income',
+            'ideology': 'annotator_ideology',
+            'age': 'annotator_age',
+            'race': {
+                'asian': 'annotator_race_asian',
+                'black': 'annotator_race_black',
+                'latinx': 'annotator_race_latinx',
+                'middle_eastern': 'annotator_race_middle_eastern',
+                'native_american': 'annotator_race_native_american',
+                'pacific_islander': 'annotator_race_pacific_islander',
+                'white': 'annotator_race_white'
+            }
+        },
+        'preprocess_fns': 'mhs_preprocess',
+        'load_params': {
+            'sep': ',',
+            'header': 0,
+        }
+    }
 
 }
 
@@ -29,43 +65,166 @@ lexicon_info = {
     }
 
 
-class StandardizedDataset:
-    def __init__(self, dataset_id, dataset_path):
+class StandardDataset:
+    def __init__(self, 
+                 dataset_id: str,
+                 dataset_path: str):
+
         self.dataset_id = dataset_id
         self.dataset_path = dataset_path
         self.dataset_info = dataset_info[dataset_id] 
 
         self.dataset = self._load_dataset()
-        
         self.preprocess_fns = self.dataset_info['preprocess_fns']
+        # Rename the text column to text 
+        self.dataset.rename(columns={self.dataset_info['text_column']: 'text'}, inplace=True)
 
-        # Preprocess the dataset (generic):
-        self._add_lemma_column()
-        self._standardize_labels()
+        # TODO: Remove later: filter to keep only first 10000 rows to test code
+        self.dataset = self.dataset.head(10000)
+        
+        # Strip the text from emojis and keep them in a separate column
+        self.dataset['text_noemoji'], self.dataset['emojis'] = zip(*self.dataset['text'].apply(self.strip_emojis))        
 
-        # Preprocess the dataset (dataset specific):
-        # ADD THEM TO DATASET_INFO AS preprocesss_fn = ['function1', 'function2', ...] and then call them here in a loop.
-        self._apply_dataset_specific_preprocessing()
+        # Preprocess the dataset (same for all datasets, extract lemmas from the text column and add a lemma column containing a list of lemmas for each text):
+        self._add_words_stems_lemmas_column()
+        
+        # Preprocess the dataset (dataset specific), need to preprocess sociodemographics and labels which are dataset specific:
+        self._preprocess_dataset()
+
+        # Keep only columns of interest
+        self.dataset = self.dataset[['text', 'emojis', 'lemmas', 'lemmas_with_pos','words', 'stems', 'sociodemographics', 'label']]
+        #self.dataset[['text', 'emojis', 'lemmas', 'words', 'stems', 'sociodemographics', 'label']].to_csv('try.csv', index=False)
+        #raise ValueError("STOP HERE")
+    
+    def print_info(self):
+        print(f"Dataset ID: {self.dataset_id}")
+        print(f"Dataset Path: {self.dataset_path}")
+        print(f"Dataset Info: {self.dataset_info}")
+        print(f"Dataset Sample:\n{self.dataset.head(5)}")
+        
 
     def _load_dataset(self):
         # Load the dataset
-        pass
+        return pd.read_csv(self.dataset_path, **self.dataset_info.get('load_params', {}))
 
-    def _lemmatize_text(self, text):
-        pass
+    def strip_emojis(self, text):
+        new_text = ""
+        emojis = []
+        for char in text:
+            if char in emoji.EMOJI_DATA:
+                emojis.append(char)
+            else:
+                new_text += char
+        return new_text, emojis
+    
 
-    def _add_lemma_column(self):
-        text_column_name = self.dataset_info['text_column']
-        self.dataset['lemma'] = self.dataset[text_column_name].apply(self._lemmatize_text)
+    def _add_words_stems_lemmas_column(self):
+        # lowercase -> tokenize -> compute pos -> lemmatize 
+        # Adds a column with (lemma, pos) for each token in the text, needed for matching later.
+        
+        # TODO: Preprocessing the text? Like fuuuuuck -> fuck?
+        lemmatizer = WordNetLemmatizer()
+        stemmer = PorterStemmer()
 
-    def _standardize_labels(self):
-        label_column_name = self.dataset_info['label_column']
-        # Add any preprocessing that is dataset specific..
- 
+        lemmas_list = [] 
+        lemmas_with_pos_list = []
+        words_list = []
+        stems_list = []
 
-    def _apply_dataset_specific_preprocessing(self):
+        for i, text in enumerate(self.dataset['text_noemoji']):
+            if i % 10000 == 0:
+                print(f"Processing text {i}/{len(self.dataset)}")
+            
+            # Lowercase and tokenize + prepare pos tags
+            tokens = word_tokenize(text.lower().strip())
+            pos_tags_tb = pos_tag(tokens)
+
+            # Remove all punctuation (not needed for us)
+            tokens = [token for token in tokens if token.isalnum()]
+            words_list.append(list(tokens))
+            stems_list.append([stemmer.stem(token) for token in tokens])
+
+            # Remove punctuation also here
+            pos_tags_tb = [(token, pos) for token, pos in pos_tags_tb if token.isalnum()]
+            all_forms = set()
+            
+            # Consider token, pos
+            for token, pos in pos_tags_tb:
+                # Convert pos to wordnet pos (n, v, a, r) for lemmatization
+                pos_wn = self.treebank_to_wordnet_pos(pos)
+
+                # If there was a pos tag, lemmatize with it
+                if pos_wn is not None:
+                    lemma = lemmatizer.lemmatize(token, pos=pos_wn)
+                    pos_to_assign = pos_wn
+                # Otherwise, rely on fallback with n->v->a->r
+                else:
+                    found_match = False
+                    for fallback_pos in ('n', 'v', 'a', 'r'):
+                        candidate = lemmatizer.lemmatize(token, pos=fallback_pos)
+                        # Check if a lemma different from the word is found
+                        if candidate != token:
+                            lemma = candidate
+                            pos_to_assign = fallback_pos
+                            found_match = True
+                            break
+                        # Also check if the word is itself a valid lemma for the specified pos tag
+                        elif wn.morphy(token, pos=fallback_pos) == token:
+                            lemma = token
+                            pos_to_assign = fallback_pos
+                            found_match = True
+                            break
+                    # If no valid lemma is found
+                    if not found_match:
+                        lemma = token
+                        pos_to_assign = None # TODO: Decide if we want to keep it as None or assign a default pos tag, like noun.
+
+                all_forms.add((lemma, pos_to_assign))
+            lemmas_list.append([lemma for lemma, pos in all_forms])
+            lemmas_with_pos_list.append(list(all_forms))
+
+        self.dataset['lemmas'] = lemmas_list
+        self.dataset['lemmas_with_pos'] = lemmas_with_pos_list
+        self.dataset['words'] = words_list
+        self.dataset['stems'] = stems_list
+
+    def _preprocess_dataset(self):
         if self.preprocess_fns:
-            pass
+            if self.preprocess_fns == 'mhs_preprocess':
+                self._mhs_preprocess()
+    
+    def _mhs_preprocess(self):
+        # Convert the label to binary: 
+        # > 0.5 is approximately hate speech, < -1 is counter or supportive speech, and -1 to +0.5 is neutral or ambiguous.
+        self.dataset['label'] = self.dataset[self.dataset_info['label_column']].apply(lambda x: 'hate_speech' if x > 0.5 else 'not_hate_speech')
+
+        # For sociodemographics, for those with key: value -> extract the value, for those with key: {} -> extract from the boolean columns the traits that are True
+        sociodemographics_columns = self.dataset_info['sociodemographics_columns']
+        def _mhs_extract_sociodemographics(row):
+            sociodemographics = {}
+            for trait, columns in sociodemographics_columns.items():
+                if isinstance(columns, str):
+                    sociodemographics[trait] = row[columns]
+                # TODO: Modify, if a person can assign multiple traits for the same sociodemographic category!
+                elif isinstance(columns, dict):
+                    for trait_value, column in columns.items():
+                        if row[column] == 1:
+                            sociodemographics[trait] = trait_value
+            return sociodemographics
+
+        self.dataset['sociodemographics'] = self.dataset.apply(_mhs_extract_sociodemographics, axis=1)
+
+    def treebank_to_wordnet_pos(self, treebank_tag):
+        if treebank_tag.startswith('J'):
+            return 'a'  # Adjective
+        elif treebank_tag.startswith('V'):
+            return 'v'  # Verb
+        elif treebank_tag.startswith('N'):
+            return 'n'  # Noun
+        elif treebank_tag.startswith('R'):
+            return 'r'  # Adverb
+        else:
+            return None
 
 
 class StandardLexicon:
@@ -85,6 +244,7 @@ class StandardLexicon:
         self.lexicon = self._load_lexicon()
 
         self.lemmatizer = WordNetLemmatizer()
+        self.stemmer = PorterStemmer()
 
         # Preprocess the lexicon:
         self._preprocess_lexicon()
@@ -93,7 +253,7 @@ class StandardLexicon:
         print(f"Lexicon ID: {self.lexicon_id}")
         print(f"Lexicon Path: {self.lexicon_path}")
         print(f"Lexicon Info: {self.lexicon_info}")
-        print(f"Lexicon Sample:\n{self.lexicon.head()}")
+        print(f"Lexicon Sample:\n{self.lexicon.head(5)}")
 
     def _load_lexicon(self):
         """Load lexicon from file based on configuration"""
@@ -127,6 +287,9 @@ class StandardLexicon:
         # Add lemma column
         self.lexicon['lemma'] = self.lexicon.apply(lambda row: self._return_base_lemma(row['word'], pos=row['pos']), axis=1)
 
+        # Add stem column
+        self.lexicon['stem'] = self.lexicon['word'].apply(lambda x: self.stemmer.stem(x))
+
         # Add is_emoji column
         self.lexicon['is_emoji'] = self.lexicon['word'].apply(self._is_emoji)
         
@@ -142,13 +305,17 @@ class StandardLexicon:
     def _return_base_lemma(self, token, pos=None):
         if pos:
             lemma = self.lemmatizer.lemmatize(token, pos=pos)
-            return lemma if lemma != token else token
+            return lemma 
 
         for fallback_pos in ('n', 'v', 'a'):
             lemma = self.lemmatizer.lemmatize(token, pos=fallback_pos)
-            if lemma != token:
+            candidate = self.lemmatizer.lemmatize(token, pos=fallback_pos)
+            if candidate != token:
+                lemma = candidate
                 return lemma
-
+            elif wn.morphy(token, pos=fallback_pos) == token:
+                lemma = token
+                return lemma
         return token
     
     
@@ -156,20 +323,25 @@ class StandardLexicon:
 
 class WordExampleExtractor:
     """
-    Takes as input standardized dataset, dataset id and standardized lexicon.
+    Takes as input StandardDataset, dataset id and StandardLexicon
     Return a pandas dataframe with columns:
      - text: the text of the post/tweet/comment
      - lemma: the lemma of the word in the lexicon that is present in the text
      - label: the label of the post/tweet/comment (need to select the specific dataset label)
      - sociodemographics: the sociodemographics of the post/tweet/comment (as a dict with {'trait1': value1, 'trait2': value2, ...})
      - dataset_source: the dataset id.
+     - match_by: whether to extract and match by word, lemma or stem.
+                 If word: extract the word from the text and match with the word column of the lexicon
+                 If lemma: extract the lemma-pos pair from both the text and the lexicon and match them
+                 If stem: extract the stem from the text and match with the stem column of the lexicon
     """
 
     def __init__(self,
-                 standardized_dataset: StandardizedDataset,
+                 standard_dataset: StandardDataset,
                  dataset_id: str,
-                 lexicon: StandardLexicon):
-        self.standardized_dataset = standardized_dataset
+                 lexicon: StandardLexicon,
+                 match_by: str = 'word'):
+        self.standard_dataset = standard_dataset
         self.dataset_id = dataset_id
         self.lexicon = lexicon
     
