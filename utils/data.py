@@ -84,8 +84,9 @@ class StandardDataset:
 
         self.dataset = self._load_dataset()
         self.preprocess_fns = self.dataset_info['preprocess_fns']
-        # Rename the text column to text 
+        # Rename the dataset-specific text column to text 
         self.dataset.rename(columns={self.dataset_info['text_column']: 'text'}, inplace=True)
+
 
         # TODO: Remove later: filter to keep only first 10000 rows to test code
         self.dataset = self.dataset.head(10000)
@@ -204,10 +205,12 @@ class StandardDataset:
                 self._mhs_preprocess()
     
     def _mhs_preprocess(self):
+        ############## Label preprocessing ##############
         # Convert the label to binary: 
         # > 0.5 is approximately hate speech, < -1 is counter or supportive speech, and -1 to +0.5 is neutral or ambiguous.
         self.dataset['label'] = self.dataset[self.dataset_info['label_column']].apply(lambda x: 'hate_speech' if x > 0.5 else 'not_hate_speech')
 
+        ############# Sociodemographics preprocessing ##############
         # For sociodemographics, for those with key: value -> extract the value, for those with key: {} -> extract from the boolean columns the traits that are True
         sociodemographics_columns = self.dataset_info['sociodemographics_columns']
         def _mhs_extract_sociodemographics(row):
@@ -217,9 +220,17 @@ class StandardDataset:
                     sociodemographics[trait] = row[columns]
                 # TODO: Modify, if a person can assign multiple traits for the same sociodemographic category!
                 elif isinstance(columns, dict):
+                    all_valid_traits = []
                     for trait_value, column in columns.items():
                         if row[column] == 1:
-                            sociodemographics[trait] = trait_value
+                            all_valid_traits.append(trait_value)
+                    if len(all_valid_traits) == 0:
+                        sociodemographics[trait] = None
+                    elif len(all_valid_traits) == 1:
+                        sociodemographics[trait] = all_valid_traits[0]
+                    else:
+                        sociodemographics[trait] = all_valid_traits
+                        # print(f"Warning: multiple traits found for trait {trait} in row {row.name}. Traits: {all_valid_traits}")
             return sociodemographics
 
         self.dataset['sociodemographics'] = self.dataset.apply(_mhs_extract_sociodemographics, axis=1)
@@ -294,7 +305,7 @@ class StandardLexicon:
 
         print(self.lexicon.head(10))
 
-        # Remove multiple word entries
+        # TODO: Remove multiple word entries, decide if we want to handle them later?
         self._remove_multiple_word_entries()
 
         # Add lemma column
