@@ -61,6 +61,14 @@ lexicon_info = {
                 'names': ['id', 'lemma']
             },
             'preprocess_fn': 'hurtlex_preprocess'
+        },
+    'hurtlex_core_EN_clean': {
+            'load_params': {
+                'sep': ',',
+                'header': None,
+                'names': ['id', 'lemma']
+            },
+            'preprocess_fn': 'hurtlex_preprocess'
         }
     }
 
@@ -123,6 +131,7 @@ class StandardDataset:
         # Adds a column with (lemma, pos) for each token in the text, needed for matching later.
         
         # TODO: Preprocessing the text? Like fuuuuuck -> fuck?
+        # TODO: Add stopwords removal for faster matching downstream?
         lemmatizer = WordNetLemmatizer()
         stemmer = PorterStemmer()
 
@@ -183,10 +192,11 @@ class StandardDataset:
             lemmas_list.append([lemma for lemma, pos in all_forms])
             lemmas_with_pos_list.append(list(all_forms))
 
-        self.dataset['lemmas'] = lemmas_list
-        self.dataset['lemmas_with_pos'] = lemmas_with_pos_list
-        self.dataset['words'] = words_list
-        self.dataset['stems'] = stems_list
+        # Convert to sets for efficient matching later    
+        self.dataset['lemmas'] = [set(x) for x in lemmas_list]
+        self.dataset['lemmas_with_pos'] = [set(x) for x in lemmas_with_pos_list]
+        self.dataset['words'] = [set(x) for x in words_list]
+        self.dataset['stems'] = [set(x) for x in stems_list]
 
     def _preprocess_dataset(self):
         if self.preprocess_fns:
@@ -242,6 +252,7 @@ class StandardLexicon:
         self.lexicon_path = lexicon_path
         self.lexicon_info = lexicon_info[lexicon_id]
         self.lexicon = self._load_lexicon()
+        # print(self.lexicon.head())
 
         self.lemmatizer = WordNetLemmatizer()
         self.stemmer = PorterStemmer()
@@ -274,12 +285,14 @@ class StandardLexicon:
         self.lexicon['pos'] = self.lexicon['word'].apply(lambda x: x.split('(')[-1].split(')')[0] if '(' in x and ')' in x else None)
         self.lexicon['pos'] = self.lexicon['pos'].str.strip()
         # Standardize POS tags to 'n' for noun, 'v' for verb, 'a' for adjective 
-        self.lexicon['pos'] = self.lexicon['pos'].replace({'adjective': 'a', 'noun': 'n', 'verb': 'v'})
+        self.lexicon['pos'] = self.lexicon['pos'].replace({'adjective': 'a', 'noun': 'n', 'verb': 'v', 'adverb': 'r'})
 
         
         # Remove the POS from the word column
         self.lexicon['word'] = self.lexicon['word'].apply(lambda x: x.split('(')[0] if '(' in x else x)
         self.lexicon['word'] = self.lexicon['word'].str.strip()
+
+        print(self.lexicon.head(10))
 
         # Remove multiple word entries
         self._remove_multiple_word_entries()
@@ -321,7 +334,7 @@ class StandardLexicon:
     
 
 
-class WordExampleExtractor:
+class ExampleExtractor:
     """
     Takes as input StandardDataset, dataset id and StandardLexicon
     Return a pandas dataframe with columns:
@@ -339,11 +352,83 @@ class WordExampleExtractor:
     def __init__(self,
                  standard_dataset: StandardDataset,
                  dataset_id: str,
-                 lexicon: StandardLexicon,
+                 standard_lexicon: StandardLexicon,
                  match_by: str = 'word'):
-        self.standard_dataset = standard_dataset
+        
         self.dataset_id = dataset_id
-        self.lexicon = lexicon
+        self.standard_dataset = standard_dataset
+        self.standard_lexicon = standard_lexicon
+        self.match_by = match_by
+
+        self.results_df = self._extract_examples()
+        print(f"Extracted {len(self.results_df)} examples from dataset {dataset_id} using match_by={match_by}.")
+
+
+
+    def _extract_examples(self):
+        non_emoji_lexicon = self.standard_lexicon.lexicon[~self.standard_lexicon.lexicon['is_emoji']]
+        emoji_lexicon = self.standard_lexicon.lexicon[self.standard_lexicon.lexicon['is_emoji']]
+
+        # Output 
+        output_rows = []
+
+
+        if self.match_by == 'word':
+            lexicon_set = set(non_emoji_lexicon['word'])
+        elif self.match_by == 'lemma':
+            lexicon_set = set(non_emoji_lexicon['lemma'])
+        elif self.match_by == 'lemma_with_pos':
+            lexicon_set = set(non_emoji_lexicon.apply(lambda row: (row['lemma'], row['pos']), axis=1))
+        elif self.match_by == 'stem':
+            lexicon_set = set(non_emoji_lexicon['stem'])
+        else:
+            raise ValueError(f"Invalid match_by value: {self.match_by}. Must be one of 'word', 'lemma', 'lemma_with_pos' or 'stem'.")
+        
+        # Iterate through dataframe rows
+        for idx, row in self.standard_dataset.dataset.iterrows():
+            if idx % 1000 == 0:
+                print(f"Processing row {idx}/{len(self.standard_dataset.dataset)}")
+
+            # text matchings
+            text = row['text']
+            label = row['label']
+            sociodemographics = row['sociodemographics']
+
+            if self.match_by == 'word':
+                matches = lexicon_set.intersection(row['words'])
+            elif self.match_by == 'lemma':
+                matches = lexicon_set.intersection(row['lemmas'])
+            elif self.match_by == 'lemma_with_pos':
+                matches = lexicon_set.intersection(row['lemmas_with_pos'])
+            elif self.match_by == 'stem':
+                matches = lexicon_set.intersection(row['stems'])
+               
+            for match in matches:
+                output_rows.append({
+                    'text': text,
+                    'lemma': match,
+                    'label': label,
+                    'sociodemographics': sociodemographics,
+                    'dataset_source': self.dataset_id
+                })
+
+            # emojis matchings
+            df_emojis = row['emojis']
+            for emoji in df_emojis:
+                if emoji in set(emoji_lexicon['word']):
+                    output_rows.append({
+                        'text': text,
+                        'lemma': emoji,
+                        'label': label,
+                        'sociodemographics': sociodemographics,
+                        'dataset_source': self.dataset_id
+                    })
+
+
+        return pd.DataFrame(output_rows)
+
+            
+
     
     
 
