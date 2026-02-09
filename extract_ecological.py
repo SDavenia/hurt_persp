@@ -1,6 +1,6 @@
 import os
 import pandas as pd
-from utils.data import StandardLexicon, StandardDataset, ExampleExtractor
+from utils.dataset_lexicon_processing import StandardLexicon, StandardDataset, ExampleExtractor
 
 
 """ EXPECTED OUTPUT FORMAT:
@@ -27,7 +27,7 @@ dataset_paths = {
 }
 
 output_dir = "data/extracted_examples"
-match_by = 'lemma'  # Options: 'lemma', 'word', 'lemma_with_pos', 'stem
+match_by = 'lemma'  # Options: 'lemma', 'word', 'lemma_with_pos', 'stem'
 
 def main():
     ########### Load and preprocess the lexicon ###########

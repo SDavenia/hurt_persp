@@ -407,17 +407,21 @@ class ExampleExtractor:
 
             if self.match_by == 'word':
                 matches = lexicon_set.intersection(row['words'])
+                match_colname = 'word'
             elif self.match_by == 'lemma':
                 matches = lexicon_set.intersection(row['lemmas'])
+                match_colname = 'lemma'
             elif self.match_by == 'lemma_with_pos':
                 matches = lexicon_set.intersection(row['lemmas_with_pos'])
+                match_colname = 'lemma_with_pos'
             elif self.match_by == 'stem':
                 matches = lexicon_set.intersection(row['stems'])
+                match_colname = 'stem'
                
             for match in matches:
                 output_rows.append({
                     'text': text,
-                    'lemma': match,
+                    match_colname: match,
                     'label': label,
                     'sociodemographics': sociodemographics,
                     'dataset_source': self.dataset_id
@@ -429,7 +433,7 @@ class ExampleExtractor:
                 if emoji in set(emoji_lexicon['word']):
                     output_rows.append({
                         'text': text,
-                        'lemma': emoji,
+                        match_colname: emoji,
                         'label': label,
                         'sociodemographics': sociodemographics,
                         'dataset_source': self.dataset_id
