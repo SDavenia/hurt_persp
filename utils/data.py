@@ -4,22 +4,38 @@
 ## Label column: the label of the post/tweet/comment (need to select the specific dataset label)
 ## Sociodemographics column
 
+import nltk
+import emoji
+import pandas as pd
+
+from nltk.stem import WordNetLemmatizer
+nltk.download('wordnet')
+nltk.download('omw-1.4')
 
 # Dictionary containing text column name, label column name and sociodemographics column name for each dataset.
-# text_co
 dataset_info = {
 
 }
 
 lexicon_info = {
-    
-}
+    'hurtlex_core_EN': {
+            'load_params': {
+                'sep': '\t',
+                'header': None,
+                'names': ['id', 'lemma']
+            },
+            'preprocess_fn': 'hurtlex_preprocess'
+        }
+    }
+
 
 class StandardizedDataset:
-    def __init__(self, dataset, dataset_id):
-        self.dataset = dataset
+    def __init__(self, dataset_id, dataset_path):
         self.dataset_id = dataset_id
+        self.dataset_path = dataset_path
         self.dataset_info = dataset_info[dataset_id] 
+
+        self.dataset = self._load_dataset()
         
         self.preprocess_fns = self.dataset_info['preprocess_fns']
 
@@ -31,6 +47,9 @@ class StandardizedDataset:
         # ADD THEM TO DATASET_INFO AS preprocesss_fn = ['function1', 'function2', ...] and then call them here in a loop.
         self._apply_dataset_specific_preprocessing()
 
+    def _load_dataset(self):
+        # Load the dataset
+        pass
 
     def _lemmatize_text(self, text):
         pass
@@ -49,20 +68,89 @@ class StandardizedDataset:
             pass
 
 
-
 class StandardLexicon:
     """
     The standardized lexicon should have the following columns:
     - id: unique identifier for each entry
     - word: the word (without POS)
     - pos: the part of speech of the word (if available)
-    - base_lemma: the base lemma of the word (if the word is not a base lemma)
+    - lemma: the base lemma of the word (if the word is not a base lemma)
     - is_emoji: whether the word is an emoji or not
     """
 
-    def __init__(self, lexicon, lexicon_id):
-        self.lexicon = lexicon
+    def __init__(self, lexicon_id, lexicon_path):
         self.lexicon_id = lexicon_id
+        self.lexicon_path = lexicon_path
+        self.lexicon_info = lexicon_info[lexicon_id]
+        self.lexicon = self._load_lexicon()
+
+        self.lemmatizer = WordNetLemmatizer()
+
+        # Preprocess the lexicon:
+        self._preprocess_lexicon()
+
+    def print_info(self):
+        print(f"Lexicon ID: {self.lexicon_id}")
+        print(f"Lexicon Path: {self.lexicon_path}")
+        print(f"Lexicon Info: {self.lexicon_info}")
+        print(f"Lexicon Sample:\n{self.lexicon.head()}")
+
+    def _load_lexicon(self):
+        """Load lexicon from file based on configuration"""
+        load_params = self.lexicon_info.get('load_params', {})
+        return pd.read_csv(self.lexicon_path, **load_params)
+    
+    def _preprocess_lexicon(self):
+        preprocess_fn = self.lexicon_info.get('preprocess_fn', None)
+        if preprocess_fn:
+            # Call the preprocessing function (defined in a separate file) on the lexicon dataframe.
+            if preprocess_fn == 'hurtlex_preprocess':
+                self._hurtlex_preprocess()
+
+    def _hurtlex_preprocess(self):
+        # The lexicon contains lemma but it is not lemmatized, so rename it as word
+        self.lexicon.rename(columns={'lemma': 'word'}, inplace=True)
+        # The lexicon contains word (POS) -> extract POS in a separate column
+        self.lexicon['pos'] = self.lexicon['word'].apply(lambda x: x.split('(')[-1].split(')')[0] if '(' in x and ')' in x else None)
+        self.lexicon['pos'] = self.lexicon['pos'].str.strip()
+        # Standardize POS tags to 'n' for noun, 'v' for verb, 'a' for adjective 
+        self.lexicon['pos'] = self.lexicon['pos'].replace({'adjective': 'a', 'noun': 'n', 'verb': 'v'})
+
+        
+        # Remove the POS from the word column
+        self.lexicon['word'] = self.lexicon['word'].apply(lambda x: x.split('(')[0] if '(' in x else x)
+        self.lexicon['word'] = self.lexicon['word'].str.strip()
+
+        # Remove multiple word entries
+        self._remove_multiple_word_entries()
+
+        # Add lemma column
+        self.lexicon['lemma'] = self.lexicon.apply(lambda row: self._return_base_lemma(row['word'], pos=row['pos']), axis=1)
+
+        # Add is_emoji column
+        self.lexicon['is_emoji'] = self.lexicon['word'].apply(self._is_emoji)
+        
+    def _is_emoji(self, token):
+        return token in emoji.EMOJI_DATA
+    
+    def _remove_multiple_word_entries(self):
+        self.lexicon['word'] = self.lexicon['word'].str.strip()
+        multiple_word_entries = self.lexicon[self.lexicon['word'].str.contains(' ')]
+        print(f"Removing {len(multiple_word_entries)} entries that are multiple words.")
+        self.lexicon = self.lexicon[~self.lexicon['word'].str.contains(' ')]
+    
+    def _return_base_lemma(self, token, pos=None):
+        if pos:
+            lemma = self.lemmatizer.lemmatize(token, pos=pos)
+            return lemma if lemma != token else token
+
+        for fallback_pos in ('n', 'v', 'a'):
+            lemma = self.lemmatizer.lemmatize(token, pos=fallback_pos)
+            if lemma != token:
+                return lemma
+
+        return token
+    
     
 
 

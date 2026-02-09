@@ -8,3 +8,9 @@ __pycache__/
 
 # Environment
 .env
+
+# Vscode
+.vscode/
+
+# Datasets:
+data/datasets/

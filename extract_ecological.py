@@ -1,10 +1,7 @@
-import emoji
-import nltk
 import pandas as pd
+from utils.data import StandardLexicon
 
-from nltk.stem import WordNetLemmatizer
-nltk.download('wordnet')
-nltk.download('omw-1.4')
+
 
 """ EXPECTED OUTPUT FORMAT:
 ============================================================
@@ -24,50 +21,12 @@ dataset_paths = {
 }
 
 def main():
-    
-    ########### Load and preprocess the lexicon (Move into StandardLexicon class) ###########
-    lexicon = pd.read_csv('data/lexicon/hurtlexcore_EN.tsv', sep='\t', header=None, names=['id', 'lemma'])
-    # The lexicon contains lemma (POS) -> extract POS in a separate column
-    lexicon['pos'] = lexicon['lemma'].apply(lambda x: x.split('(')[-1].split(')')[0] if '(' in x and ')' in x else None)
-    lexicon['pos'] = lexicon['pos'].str.strip()
-    # Remove the POS from the lemma column
-    lexicon['lemma'] = lexicon['lemma'].apply(lambda x: x.split('(')[0] if '(' in x else x)
-    lexicon['lemma'] = lexicon['lemma'].str.strip()
-    print(lexicon.head())
+    ########### Load and preprocess the lexicon ###########
+    lexicon = StandardLexicon(lexicon_id='hurtlex_core_EN', lexicon_path=lexicon_path)
+    lexicon.print_info()
+   
 
-    # Remove all entries that are multiple words (i.e., contain spaces)
-    print(f"Removing {len(lexicon[lexicon['lemma'].str.contains(' ')])} entries that are multiple words.")
-    lexicon = lexicon[~lexicon['lemma'].str.contains(' ')]
-
-    # Check that all entries are either emojis or valid lemmas.
-    lemmatizer = WordNetLemmatizer()
-
-    def is_base_lemma(token):
-        return (
-            lemmatizer.lemmatize(token, pos='n') == token and
-            lemmatizer.lemmatize(token, pos='v') == token and
-            lemmatizer.lemmatize(token, pos='a') == token
-        )
-    def is_emoji(token):
-        return token in emoji.EMOJI_DATA
-    
-    def return_base_lemma(token):
-        if is_base_lemma(token):
-            return token
-        else:
-            return lemmatizer.lemmatize(token, pos='n') if lemmatizer.lemmatize(token, pos='n') != token else (lemmatizer.lemmatize(token, pos='v') if lemmatizer.lemmatize(token, pos='v') != token else lemmatizer.lemmatize(token, pos='a'))
-
-    # Identify which entries are base lemmas and which are emojis, also return the base lemma for non-base lemma entries
-    lexicon['is_base_lemma'] = lexicon['lemma'].apply(is_base_lemma)
-    lexicon['base_lemma'] = lexicon['lemma'].apply(return_base_lemma)
-    lexicon['is_emoji'] = lexicon['lemma'].apply(is_emoji)
-    print("Found emojis number:", lexicon['is_emoji'].sum())
-    
-    # Print the entries that are not base lemmas or emojis
-    print(lexicon[~(lexicon['is_base_lemma'] | lexicon['is_emoji'])])
-    lexicon = lexicon[lexicon['is_base_lemma'] | lexicon['is_emoji']]
-
-    # Load the dataset        
+    ########### Load and preprocess the datasets ###########
 
 
 
