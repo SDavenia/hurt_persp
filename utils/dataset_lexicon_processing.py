@@ -49,7 +49,71 @@ dataset_info = {
             'sep': ',',
             'header': 0,
         }
+    },
+    'annWithAttitudes': {
+        'text_column': 'tweet',
+        'label_column': 'off_avg',
+        'sociodemographics_columns': {
+            'gender': 'annotatorGender',
+            'race': 'annotatorRace',
+            'age': 'annotatorAge',
+            'ideology': 'annotatorPolitics'
+        },
+        'preprocess_fns': 'annWithAttitudes_preprocess',
+        'load_params': {
+            'sep': ',',
+            'header': 0,
+        }
+        
+    },
+    'voiced': {
+        'text_column': 'comment_text',
+        'label_column': 'PERSON_TOXIC_raw',
+        'sociodemographics_columns': {
+            'gender': 'gender',
+            'race': 'race',
+            'age': 'age',
+            'education': 'education',
+            'ideology': 'annotator_political'
+        },
+        'preprocess_fns': 'voiced_preprocess',
+        'load_params': {
+            'sep': ',',
+            'header': 0,
+        }
+    },
+    'sbic': {
+        'text_column': 'post',
+        'label_column': 'offensiveYN',
+        'sociodemographics_columns': {
+            'gender': 'annotatorGender',
+            'race': 'annotatorRace',
+            'age': 'annotatorAge',
+            'ideology': 'annotatorPolitics'
+        },
+        'preprocess_fns': 'sbic_preprocess',
+        'load_params': {
+            'sep': ',',
+            'header': 0,
+        }
+    },
+    'popquorn': {
+        'text_column': 'text',
+        'label_column': 'offensiveness',
+        'sociodemographics_columns': {
+            'gender': 'gender',
+            'race': 'race',
+            'age': 'age',
+            'education': 'education'
+        },
+        'preprocess_fns': 'popquorn_preprocess',
+        'load_params': {
+            'sep': ',',
+            'header': 0,
+        }
     }
+
+
 
 }
 
@@ -87,9 +151,8 @@ class StandardDataset:
         # Rename the dataset-specific text column to text 
         self.dataset.rename(columns={self.dataset_info['text_column']: 'text'}, inplace=True)
 
-
-        # TODO: Remove later: filter to keep only first 10000 rows to test code
-        self.dataset = self.dataset.head(10000)
+        # TODO: Remove later: filter to keep only first 10 rows to test code
+        # self.dataset = self.dataset.head(10)
         
         # Strip the text from emojis and keep them in a separate column
         self.dataset['text_noemoji'], self.dataset['emojis'] = zip(*self.dataset['text'].apply(self.strip_emojis))        
@@ -103,7 +166,6 @@ class StandardDataset:
         # Keep only columns of interest
         self.dataset = self.dataset[['text', 'emojis', 'lemmas', 'lemmas_with_pos','words', 'stems', 'sociodemographics', 'label']]
         #self.dataset[['text', 'emojis', 'lemmas', 'words', 'stems', 'sociodemographics', 'label']].to_csv('try.csv', index=False)
-        #raise ValueError("STOP HERE")
     
     def print_info(self):
         print(f"Dataset ID: {self.dataset_id}")
@@ -131,8 +193,6 @@ class StandardDataset:
         # lowercase -> tokenize -> compute pos -> lemmatize 
         # Adds a column with (lemma, pos) for each token in the text, needed for matching later.
         
-        # TODO: Preprocessing the text? Like fuuuuuck -> fuck?
-        # TODO: Add stopwords removal for faster matching downstream?
         lemmatizer = WordNetLemmatizer()
         stemmer = PorterStemmer()
 
@@ -157,6 +217,8 @@ class StandardDataset:
             # Remove punctuation also here
             pos_tags_tb = [(token, pos) for token, pos in pos_tags_tb if token.isalnum()]
             all_forms = set()
+
+            # TODO: Add stopwords removal for faster matching downstream? 
             
             # Consider token, pos
             for token, pos in pos_tags_tb:
@@ -187,7 +249,7 @@ class StandardDataset:
                     # If no valid lemma is found
                     if not found_match:
                         lemma = token
-                        pos_to_assign = None # TODO: Decide if we want to keep it as None or assign a default pos tag, like noun.
+                        pos_to_assign = None # TODO?: Decide if we want to keep it as None or assign a default pos tag, like noun.
 
                 all_forms.add((lemma, pos_to_assign))
             lemmas_list.append([lemma for lemma, pos in all_forms])
@@ -203,37 +265,108 @@ class StandardDataset:
         if self.preprocess_fns:
             if self.preprocess_fns == 'mhs_preprocess':
                 self._mhs_preprocess()
+            elif self.preprocess_fns == 'annWithAttitudes_preprocess':
+                self._annWithAttitudes_preprocess()
+            elif self.preprocess_fns == 'voiced_preprocess':
+                self._voiced_preprocess()
+            elif self.preprocess_fns == 'sbic_preprocess':
+                self._sbic_preprocess()
+            elif self.preprocess_fns == 'popquorn_preprocess':
+                self._popquorn_preprocess()
+            else:
+                raise ValueError(f"Invalid preprocess_fns value: {self.preprocess_fns}. Must be one of 'mhs_preprocess', 'annWithAttitudes_preprocess', 'voiced_preprocess', 'sbic_preprocess' or 'popquorn_preprocess'.")
+    
+    def _remove_none_in_label_column(self):
+        # Remove rows with None in the label column, since we need the label for our analysis.
+        initial_len = len(self.dataset)
+        self.dataset = self.dataset[self.dataset[self.dataset_info['label_column']].notna()]
+        print(f"Removed {initial_len - len(self.dataset)} rows with None in the label column.")
+
+
+    def _extract_sociodemographics(self, row):
+        sociodemographics = {}
+        for trait, column in self.dataset_info['sociodemographics_columns'].items():
+            if isinstance(column, str):
+                sociodemographics[trait] = row[column]
+            elif isinstance(column, dict):
+                all_valid_traits = []
+                for trait_value, col in column.items():
+                    if row[col] == 1:
+                        all_valid_traits.append(trait_value)
+                if len(all_valid_traits) == 0:
+                    sociodemographics[trait] = None
+                elif len(all_valid_traits) == 1:
+                    sociodemographics[trait] = all_valid_traits[0]
+                else:
+                    sociodemographics[trait] = set(all_valid_traits)
+                    # print(f"Warning: multiple traits found for trait {trait} in row {row.name}. Traits: {all_valid_traits}")
+        return sociodemographics
+
+    def _annWithAttitudes_preprocess(self):
+        ############## Label preprocessing ##############
+        # Convert the label to binary: scores <3 treated as not offensive, scores >=3 treated as offensive (following Draetta et al, 2025)
+        self._remove_none_in_label_column()
+        self.dataset['label'] = self.dataset[self.dataset_info['label_column']].apply(lambda x: 'hurtful' if x >=3  else 'not_hurtful')
+
+        ############# Sociodemographics preprocessing ##############
+        # For sociodemographics, keep them as they are since they are already in a clean format.
+        self.dataset['sociodemographics'] = self.dataset.apply(self._extract_sociodemographics, axis=1)
     
     def _mhs_preprocess(self):
         ############## Label preprocessing ##############
         # Convert the label to binary: 
         # > 0.5 is approximately hate speech, < -1 is counter or supportive speech, and -1 to +0.5 is neutral or ambiguous.
-        self.dataset['label'] = self.dataset[self.dataset_info['label_column']].apply(lambda x: 'hate_speech' if x > 0.5 else 'not_hate_speech')
+        self._remove_none_in_label_column()
+        self.dataset['label'] = self.dataset[self.dataset_info['label_column']].apply(lambda x: 'hurtful' if x > 0.5 else 'not_hurtful')
 
         ############# Sociodemographics preprocessing ##############
         # For sociodemographics, for those with key: value -> extract the value, for those with key: {} -> extract from the boolean columns the traits that are True
-        sociodemographics_columns = self.dataset_info['sociodemographics_columns']
-        def _mhs_extract_sociodemographics(row):
-            sociodemographics = {}
-            for trait, columns in sociodemographics_columns.items():
-                if isinstance(columns, str):
-                    sociodemographics[trait] = row[columns]
-                # TODO: Modify, if a person can assign multiple traits for the same sociodemographic category!
-                elif isinstance(columns, dict):
-                    all_valid_traits = []
-                    for trait_value, column in columns.items():
-                        if row[column] == 1:
-                            all_valid_traits.append(trait_value)
-                    if len(all_valid_traits) == 0:
-                        sociodemographics[trait] = None
-                    elif len(all_valid_traits) == 1:
-                        sociodemographics[trait] = all_valid_traits[0]
-                    else:
-                        sociodemographics[trait] = all_valid_traits
-                        # print(f"Warning: multiple traits found for trait {trait} in row {row.name}. Traits: {all_valid_traits}")
-            return sociodemographics
+        self.dataset['sociodemographics'] = self.dataset.apply(self._extract_sociodemographics, axis=1)
 
-        self.dataset['sociodemographics'] = self.dataset.apply(_mhs_extract_sociodemographics, axis=1)
+    def _voiced_preprocess(self):
+        ############## Label preprocessing ##############
+        # Convert the label to binary:
+        # Label contains : "Not at all offensive", "Slightly offensive", "Moderately offensive", "Very offensive", "Extremely offensive".
+        #                   Map "Not at all offensive" and "Slightly offensive" to not hurtful, and "Moderately offensive", "Very offensive", "Extremely offensive" to hurtful.
+        # Check that all labels are in the expected set
+        self._remove_none_in_label_column()
+        expected_labels = {"Not at all offensive", "Slightly offensive", "Moderately offensive", "Very offensive", "Extremely offensive"}
+        unique_labels = set(self.dataset[self.dataset_info['label_column']].unique())
+        if not unique_labels.issubset(expected_labels):
+            raise ValueError(f"Unexpected labels found in the dataset: {unique_labels - expected_labels}. Expected labels are: {expected_labels}")
+        self.dataset['label'] = self.dataset[self.dataset_info['label_column']].apply(lambda x: 'hurtful' if x in ["Moderately offensive", "Very offensive", "Extremely offensive"] else 'not_hurtful')
+
+        ############# Sociodemographics preprocessing ##############
+        # For sociodemographics, keep them as they are since they are already in a clean format.
+        self.dataset['sociodemographics'] = self.dataset.apply(self._extract_sociodemographics, axis=1)
+
+    def _sbic_preprocess(self):
+        ############## Label preprocessing ##############
+        # Convert the label to binary:
+        # Label contains 1 for offensive, 0 for not offensive and 0.5 for maybe, keep only 1 as hurtful and 0 and 0.5 as not hurtful.
+        # Check that all labels are in the expected set
+        self._remove_none_in_label_column()
+        expected_labels = {0, 0.5, 1}
+        unique_labels = set(self.dataset[self.dataset_info['label_column']].unique())
+        if not unique_labels.issubset(expected_labels):
+            raise ValueError(f"Unexpected labels found in the dataset: {unique_labels - expected_labels}. Expected labels are: {expected_labels}")
+        self.dataset['label'] = self.dataset[self.dataset_info['label_column']].apply(lambda x: 'hurtful' if x == 1 else 'not_hurtful')
+
+        ############# Sociodemographics preprocessing ##############
+        # For sociodemographics, keep them as they are since they are already in a clean format.
+        self.dataset['sociodemographics'] = self.dataset.apply(self._extract_sociodemographics, axis=1)
+
+    def _popquorn_preprocess(self):
+        ############## Label preprocessing ##############
+        # Convert the label to binary:
+        # Dataset contains a score from 1 to 5 indicating the offensiveness of the comment, keep comments with score >= 3 as hurtful and < 3 as not hurtful.
+        self._remove_none_in_label_column()
+        self.dataset['label'] = self.dataset[self.dataset_info['label_column']].apply(lambda x: 'hurtful' if x >= 3 else 'not_hurtful')
+
+        ############# Sociodemographics preprocessing ##############
+        # For sociodemographics, keep them as they are since they are already in a clean format.
+        self.dataset['sociodemographics'] = self.dataset.apply(self._extract_sociodemographics, axis=1)
+       
 
     def treebank_to_wordnet_pos(self, treebank_tag):
         if treebank_tag.startswith('J'):
@@ -303,9 +436,7 @@ class StandardLexicon:
         self.lexicon['word'] = self.lexicon['word'].apply(lambda x: x.split('(')[0] if '(' in x else x)
         self.lexicon['word'] = self.lexicon['word'].str.strip()
 
-        print(self.lexicon.head(10))
-
-        # TODO: Remove multiple word entries, decide if we want to handle them later?
+        # TODO?: Remove multiple word entries, decide if we want to handle them later?
         self._remove_multiple_word_entries()
 
         # Add lemma column

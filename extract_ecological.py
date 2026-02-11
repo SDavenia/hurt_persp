@@ -23,11 +23,15 @@ lexicon_path = 'data/lexicon/hurtlexcore_EN_clean.csv'
 
 
 dataset_paths = {
-    'mhs': 'data/datasets/mhs/data.csv'
+    # 'mhs': 'data/datasets/mhs/data.csv'
+    'annWithAttitudes': 'data/datasets/annWithAttitudes/data.csv',
+    'voiced': 'data/datasets/voiced/data.csv',
+    'sbic': 'data/datasets/sbic/data.csv',
+    'popquorn': 'data/datasets/popquorn/data.csv'
 }
 
 output_dir = "data/extracted_examples"
-match_by = 'lemma'  # Options: 'lemma', 'word', 'lemma_with_pos', 'stem'
+match_by = 'lemma_with_pos'  # Options: 'lemma', 'word', 'lemma_with_pos', 'stem'
 
 def main():
     ########### Load and preprocess the lexicon ###########
@@ -38,6 +42,7 @@ def main():
     ########### Load and preprocess the datasets ###########
     all_output_dfs = []
     for dataset_id, dataset_path in dataset_paths.items():
+        print(f"\n{'='*30}\nProcessing dataset: {dataset_id}\n{'='*30}")
         dataset = StandardDataset(dataset_id=dataset_id, dataset_path=dataset_path)
         dataset.print_info()
         # dataset.dataset.to_csv(f'{dataset_id}_processed.csv', index=False)  # Save processed dataset for inspection
