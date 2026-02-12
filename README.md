@@ -1,20 +1,20 @@
 ### Hurt Persp
 
 #### 0. Initial setup
-Create a `.env` file with HF
+Create a `.env` file with HF valid key.
 
 The following datasets can be downloaded directly from Huggingface using the `download_datasets.py`:
 - POPQUORN
-- voiced
+- voiced: request access via HF beforehand.
 
 For the other datasets:
 - SBIC: dowload `SBIC.v2.dev.csv, SBIC.v2.trn.csv, SBIC.v2.tst.csv` from [here](https://maartensap.com/social-bias-frames/) and place them in the `data/datasets/sbic` folder. The `download_datasets.py` script will handle the conversion into a single .csv file that can be used downstream.
 - annWithAttitudes: request access to the authors, and place the large-study dataset in `data/datasets/annWithAttitudes/data.csv`.
+- MD-Agreement: request access to the authors, and place the dataset in: MISSING
 
-MISSING:
-- MD Leonardelli
+The lexicon considered for the analysis is included in the repository.
 
-#### 1. Download all datasets
+#### 1. Download all datasets and Lexica
 ```
 python download_datasets.py
 ```

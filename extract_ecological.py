@@ -15,8 +15,8 @@ RESULTS DATAFRAME:
 4  worthless  social_media_posts              You are worthless  offensive
 """
 
-lexicon_id = 'hurtlex_core_EN_clean'
-lexicon_path = 'data/lexicon/hurtlexcore_EN_clean.csv'
+lexicon_id = 'hurtlexcore_EN_clean_with_tags'
+lexicon_path = 'data/lexicon/hurtlexcore_EN_clean_with_tags.csv'
 
 # lexicon_id = 'hurtlex_core_EN'
 # lexicon_path = 'data/lexicon/hurtlexcore_EN.tsv'
@@ -36,8 +36,7 @@ match_by = 'lemma_with_pos'  # Options: 'lemma', 'word', 'lemma_with_pos', 'stem
 def main():
     ########### Load and preprocess the lexicon ###########
     lexicon = StandardLexicon(lexicon_id=lexicon_id, lexicon_path=lexicon_path)
-    lexicon.print_info()
-   
+    lexicon.print_info()   
 
     ########### Load and preprocess the datasets ###########
     all_output_dfs = []

@@ -118,23 +118,34 @@ dataset_info = {
 }
 
 lexicon_info = {
-    'hurtlex_core_EN': {
+    'hurtlexcore_EN': {
             'load_params': {
                 'sep': '\t',
                 'header': None,
                 'names': ['id', 'lemma']
             },
+            'tags': None,
             'preprocess_fn': 'hurtlex_preprocess'
         },
-    'hurtlex_core_EN_clean': {
+    'hurtlexcore_EN_clean': {
             'load_params': {
                 'sep': ',',
                 'header': None,
                 'names': ['id', 'lemma']
             },
+            'tags': None,
+            'preprocess_fn': 'hurtlex_preprocess'
+        },
+    'hurtlexcore_EN_clean_with_tags': {
+            'load_params': {
+                'sep': '\t',
+                'header': 0,
+            },
+            'tags': 'category',
             'preprocess_fn': 'hurtlex_preprocess'
         }
     }
+
 
 
 class StandardDataset:
@@ -431,7 +442,6 @@ class StandardLexicon:
         # Standardize POS tags to 'n' for noun, 'v' for verb, 'a' for adjective 
         self.lexicon['pos'] = self.lexicon['pos'].replace({'adjective': 'a', 'noun': 'n', 'verb': 'v', 'adverb': 'r'})
 
-        
         # Remove the POS from the word column
         self.lexicon['word'] = self.lexicon['word'].apply(lambda x: x.split('(')[0] if '(' in x else x)
         self.lexicon['word'] = self.lexicon['word'].str.strip()
@@ -442,11 +452,22 @@ class StandardLexicon:
         # Add lemma column
         self.lexicon['lemma'] = self.lexicon.apply(lambda row: self._return_base_lemma(row['word'], pos=row['pos']), axis=1)
 
+        # Add lemma_with_pos column
+        self.lexicon['lemma_with_pos'] = self.lexicon.apply(lambda row: (row['lemma'], row['pos']), axis=1)
+
         # Add stem column
         self.lexicon['stem'] = self.lexicon['word'].apply(lambda x: self.stemmer.stem(x))
 
         # Add is_emoji column
         self.lexicon['is_emoji'] = self.lexicon['word'].apply(self._is_emoji)
+
+        # If tag is not None, include a tag column with the tags as a set, they are saved as a string with | as separator in the original csv, so we need to split them and convert to set for easier matching later.
+        if self.lexicon_info.get('tags', None):
+            # Rename the tag column to 'tag' for consistency
+            self.lexicon.rename(columns={self.lexicon_info['tags']: 'tag'}, inplace=True)
+            # Convert the tag column to a set of tags
+            self.lexicon['tag'] = self.lexicon['tag'].apply(lambda x: set(x.split('|')) if pd.notna(x) else set())
+            
         
     def _is_emoji(self, token):
         return token in emoji.EMOJI_DATA
@@ -501,6 +522,8 @@ class ExampleExtractor:
         self.standard_dataset = standard_dataset
         self.standard_lexicon = standard_lexicon
         self.match_by = match_by
+
+        self.lexicon_has_tags = self.standard_lexicon.lexicon_info.get('tags', None) is not None
 
         self.results_df = self._extract_examples()
         print(f"Extracted {len(self.results_df)} examples from dataset {dataset_id} using match_by={match_by}.")
@@ -569,9 +592,14 @@ class ExampleExtractor:
                         'sociodemographics': sociodemographics,
                         'dataset_source': self.dataset_id
                     })
-
-
-        return pd.DataFrame(output_rows)
+        # If the lexicon has tags, add the tags to the output dataframe by merging with the lexicon dataframe on the matched word/lemma/word_with_lemma/stem column.
+        if self.lexicon_has_tags:
+            output_df = pd.DataFrame(output_rows)
+            output_df = output_df.merge(self.standard_lexicon.lexicon[[match_colname, 'tag']], how='left', left_on=match_colname, right_on=match_colname)
+        else:
+            output_df = pd.DataFrame(output_rows)
+            
+        return output_df
 
             
 
