@@ -315,9 +315,9 @@ class StandardDataset:
 
     def _annWithAttitudes_preprocess(self):
         ############## Label preprocessing ##############
-        # Convert the label to binary: scores <3 treated as not offensive, scores >=3 treated as offensive (following Draetta et al, 2025)
+        # Convert the label to binary: scores <2 treated as not offensive, scores >=2 treated as offensive 
         self._remove_none_in_label_column()
-        self.dataset['label'] = self.dataset[self.dataset_info['label_column']].apply(lambda x: 'hurtful' if x >=3  else 'not_hurtful')
+        self.dataset['label'] = self.dataset[self.dataset_info['label_column']].apply(lambda x: 'hurtful' if x >=2  else 'not_hurtful')
 
         ############# Sociodemographics preprocessing ##############
         # For sociodemographics, keep them as they are since they are already in a clean format.
@@ -338,14 +338,14 @@ class StandardDataset:
         ############## Label preprocessing ##############
         # Convert the label to binary:
         # Label contains : "Not at all offensive", "Slightly offensive", "Moderately offensive", "Very offensive", "Extremely offensive".
-        #                   Map "Not at all offensive" and "Slightly offensive" to not hurtful, and "Moderately offensive", "Very offensive", "Extremely offensive" to hurtful.
+        #                   Map "Not at all offensive" to not hurtful, and "Slightly offensive", "Moderately offensive", "Very offensive", "Extremely offensive" to hurtful.
         # Check that all labels are in the expected set
         self._remove_none_in_label_column()
         expected_labels = {"Not at all offensive", "Slightly offensive", "Moderately offensive", "Very offensive", "Extremely offensive"}
         unique_labels = set(self.dataset[self.dataset_info['label_column']].unique())
         if not unique_labels.issubset(expected_labels):
             raise ValueError(f"Unexpected labels found in the dataset: {unique_labels - expected_labels}. Expected labels are: {expected_labels}")
-        self.dataset['label'] = self.dataset[self.dataset_info['label_column']].apply(lambda x: 'hurtful' if x in ["Moderately offensive", "Very offensive", "Extremely offensive"] else 'not_hurtful')
+        self.dataset['label'] = self.dataset[self.dataset_info['label_column']].apply(lambda x: 'hurtful' if x in ["Slightly offensive", "Moderately offensive", "Very offensive", "Extremely offensive"] else 'not_hurtful')
 
         ############# Sociodemographics preprocessing ##############
         # For sociodemographics, keep them as they are since they are already in a clean format.
@@ -354,14 +354,14 @@ class StandardDataset:
     def _sbic_preprocess(self):
         ############## Label preprocessing ##############
         # Convert the label to binary:
-        # Label contains 1 for offensive, 0 for not offensive and 0.5 for maybe, keep only 1 as hurtful and 0 and 0.5 as not hurtful.
+        # Label contains 1 for offensive, 0 for not offensive and 0.5 for maybe, keep 0.5 and 1 as hurtful and 0 as not hurtful.
         # Check that all labels are in the expected set
         self._remove_none_in_label_column()
         expected_labels = {0, 0.5, 1}
         unique_labels = set(self.dataset[self.dataset_info['label_column']].unique())
         if not unique_labels.issubset(expected_labels):
             raise ValueError(f"Unexpected labels found in the dataset: {unique_labels - expected_labels}. Expected labels are: {expected_labels}")
-        self.dataset['label'] = self.dataset[self.dataset_info['label_column']].apply(lambda x: 'hurtful' if x == 1 else 'not_hurtful')
+        self.dataset['label'] = self.dataset[self.dataset_info['label_column']].apply(lambda x: 'hurtful' if x in [0.5, 1] else 'not_hurtful')
 
         ############# Sociodemographics preprocessing ##############
         # For sociodemographics, keep them as they are since they are already in a clean format.
@@ -370,9 +370,9 @@ class StandardDataset:
     def _popquorn_preprocess(self):
         ############## Label preprocessing ##############
         # Convert the label to binary:
-        # Dataset contains a score from 1 to 5 indicating the offensiveness of the comment, keep comments with score >= 3 as hurtful and < 3 as not hurtful.
+        # Dataset contains a score from 1 to 5 indicating the offensiveness of the comment, keep comments with score >= 2 as hurtful and < 2 as not hurtful.
         self._remove_none_in_label_column()
-        self.dataset['label'] = self.dataset[self.dataset_info['label_column']].apply(lambda x: 'hurtful' if x >= 3 else 'not_hurtful')
+        self.dataset['label'] = self.dataset[self.dataset_info['label_column']].apply(lambda x: 'hurtful' if x >= 2 else 'not_hurtful')
 
         ############# Sociodemographics preprocessing ##############
         # For sociodemographics, keep them as they are since they are already in a clean format.

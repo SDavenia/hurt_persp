@@ -3,20 +3,19 @@
 #### 0. Initial setup
 Create a `.env` file with HF valid key.
 
-The following datasets can be downloaded directly from Huggingface using the `download_datasets.py`:
+The following datasets can be downloaded directly from Huggingface using the `prepare_datasets_lexicon_data.py`:
 - POPQUORN
 - voiced: request access via HF beforehand.
 
 For the other datasets:
-- SBIC: dowload `SBIC.v2.dev.csv, SBIC.v2.trn.csv, SBIC.v2.tst.csv` from [here](https://maartensap.com/social-bias-frames/) and place them in the `data/datasets/sbic` folder. The `download_datasets.py` script will handle the conversion into a single .csv file that can be used downstream.
+- SBIC: dowload `SBIC.v2.dev.csv, SBIC.v2.trn.csv, SBIC.v2.tst.csv` from [here](https://maartensap.com/social-bias-frames/) and place them in the `data/datasets/sbic` folder. The `prepare_datasets_lexicon_data.py` script will handle the conversion into a single .csv file that can be used downstream.
 - annWithAttitudes: request access to the authors, and place the large-study dataset in `data/datasets/annWithAttitudes/data.csv`.
-- MD-Agreement: request access to the authors, and place the dataset in: MISSING
 
 The lexicon considered for the analysis is included in the repository.
 
-#### 1. Download all datasets and Lexica
+#### 1. Download and Preprocess datasets.
 ```
-python download_datasets.py
+python prepare_datasets_lexicon_data.py
 ```
 Downloads all publicly available datasets and stores them to `data/datasets/{dataset_id}/data.csv`
 
@@ -24,7 +23,7 @@ Downloads all publicly available datasets and stores them to `data/datasets/{dat
 ```
 python extract_ecological.py
 ```
-Given the specified lexicon (default uses a cleaned version of Hurtlex-core-EN), and the matching type (e.g. whether the lexicon lemma/word/stem should match with the corresponding ones in the dataset texts, defaults to lemma), it saves a dataframe with columns `text`, `{lemma | lemma_with_pos | word | stem}, label, sociodemographics, dataset_source`, with standardized format for all_datasets.
+Given the specified lexicon (default uses a cleaned version of Hurtlex-core-EN), and the matching type (e.g. whether the lexicon lemma/word/stem should match with the corresponding ones in the dataset texts, defaults to lemma, defaults to `lemma_with_pos`), it saves a dataframe with columns `text`, `{lemma | lemma_with_pos | word | stem}, label, sociodemographics, dataset_source`, with standardized format for all_datasets.
 
 
 #### Models of different sizes?
