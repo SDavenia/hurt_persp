@@ -35,3 +35,8 @@ Given the specified lexicon (default uses a cleaned version of Hurtlex-core-EN),
 - **qwen3**: unsloth/Qwen3-4B, unsloth/Qwen3-8B, unsloth/Qwen3-14B, unsloth/Qwen3-32B
 
 
+#### TODO:
+- [] Add annotator id
+- [] Add unique text id
+- [] Keep original label
+Add them in the dictionary and preserve them.

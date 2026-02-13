@@ -53,6 +53,8 @@ dataset_info = {
     'annWithAttitudes': {
         'text_column': 'tweet',
         'label_column': 'off_avg',
+        'text_id_column': 'postId',
+        'annotator_id_column': 'annId',
         'sociodemographics_columns': {
             'gender': 'annotatorGender',
             'race': 'annotatorRace',
@@ -69,6 +71,8 @@ dataset_info = {
     'voiced': {
         'text_column': 'comment_text',
         'label_column': 'PERSON_TOXIC_raw',
+        'text_id_column': 'comment_id',
+        'annotator_id_column': 'annotator_id',
         'sociodemographics_columns': {
             'gender': 'gender',
             'race': 'race',
@@ -85,6 +89,8 @@ dataset_info = {
     'sbic': {
         'text_column': 'post',
         'label_column': 'offensiveYN',
+        'text_id_column': 'HITId',
+        'annotator_id_column': 'WorkerId',
         'sociodemographics_columns': {
             'gender': 'annotatorGender',
             'race': 'annotatorRace',
@@ -100,6 +106,8 @@ dataset_info = {
     'popquorn': {
         'text_column': 'text',
         'label_column': 'offensiveness',
+        'text_id_column': 'instance_id',
+        'annotator_id_column': 'user_id',
         'sociodemographics_columns': {
             'gender': 'gender',
             'race': 'race',
@@ -159,8 +167,25 @@ class StandardDataset:
 
         self.dataset = self._load_dataset()
         self.preprocess_fns = self.dataset_info['preprocess_fns']
+
+        #### VARIABLE NAMES STANDARDIZATION #### -> TODO: Move into a separate function for better readability and modularity
         # Rename the dataset-specific text column to text 
         self.dataset.rename(columns={self.dataset_info['text_column']: 'text'}, inplace=True)
+
+        # Map annotator ids on 1 to num annotators
+        annotator_ids_map = {annotator_id: f"{self.dataset_id}_ann-{idx}" for idx, annotator_id in enumerate(self.dataset[self.dataset_info['annotator_id_column']].unique())}
+        self.dataset[self.dataset_info['annotator_id_column']] = self.dataset[self.dataset_info['annotator_id_column']].map(annotator_ids_map)
+        # Rename column to 'annotator_id' for consistency
+        self.dataset.rename(columns={self.dataset_info['annotator_id_column']: 'annotator_id'}, inplace=True)
+        
+        # Map text ids on 1 to num texts
+        text_ids_map = {text_id: f"{self.dataset_id}_text-{idx}" for idx, text_id in enumerate(self.dataset[self.dataset_info['text_id_column']].unique())}
+        self.dataset[self.dataset_info['text_id_column']] = self.dataset[self.dataset_info['text_id_column']].map(text_ids_map)
+        # Rename column to 'text_id' for consistency
+        self.dataset.rename(columns={self.dataset_info['text_id_column']: 'text_id'}, inplace=True)
+
+        # Copy the original label column to a new column 'original_label' before preprocessing, to keep track of the original labels in case we want to do further analysis later.
+        self.dataset['original_label'] = self.dataset[self.dataset_info['label_column']].copy()
 
         # TODO: Remove later: filter to keep only first 10 rows to test code
         # self.dataset = self.dataset.head(10)
@@ -175,7 +200,7 @@ class StandardDataset:
         self._preprocess_dataset()
 
         # Keep only columns of interest
-        self.dataset = self.dataset[['text', 'emojis', 'lemmas', 'lemmas_with_pos','words', 'stems', 'sociodemographics', 'label']]
+        self.dataset = self.dataset[['annotator_id', 'text_id', 'text', 'emojis', 'lemmas', 'lemmas_with_pos','words', 'stems', 'sociodemographics', 'label', 'original_label']]
         #self.dataset[['text', 'emojis', 'lemmas', 'words', 'stems', 'sociodemographics', 'label']].to_csv('try.csv', index=False)
     
     def print_info(self):
@@ -557,6 +582,9 @@ class ExampleExtractor:
             # text matchings
             text = row['text']
             label = row['label']
+            text_id = row['text_id']
+            ann_id = row['annotator_id']
+            original_label = row['original_label']
             sociodemographics = row['sociodemographics']
 
             if self.match_by == 'word':
@@ -578,7 +606,10 @@ class ExampleExtractor:
                     match_colname: match,
                     'label': label,
                     'sociodemographics': sociodemographics,
-                    'dataset_source': self.dataset_id
+                    'dataset_source': self.dataset_id,
+                    'annotator_id': ann_id,
+                    'text_id': text_id,
+                    'original_label': original_label
                 })
 
             # emojis matchings
@@ -590,7 +621,10 @@ class ExampleExtractor:
                         match_colname: emoji,
                         'label': label,
                         'sociodemographics': sociodemographics,
-                        'dataset_source': self.dataset_id
+                        'dataset_source': self.dataset_id,
+                        'annotator_id': ann_id,
+                        'text_id': text_id,
+                        'original_label': original_label
                     })
         # If the lexicon has tags, add the tags to the output dataframe by merging with the lexicon dataframe on the matched word/lemma/word_with_lemma/stem column.
         if self.lexicon_has_tags:
