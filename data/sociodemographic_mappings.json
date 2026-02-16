@@ -1,0 +1,107 @@
+{
+    "gender": {
+        "Man": "man",
+        "Male": "man",
+        "man": "man",
+
+        "Female": "woman",
+        "Woman": "woman",
+        "woman": "woman",
+
+        "Non-binary": "nonBinary",
+        "nonBinary": "nonBinary", 
+        "Non-binary / third gender": "nonBinary",
+
+        "transman": "transman"
+    },
+    "race": {
+        "Asian": "asian",
+        "asian": "asian",
+
+        "Black or African American": "black",
+        "black": "black",
+
+        "Hispanic or Latino": "hispanic",
+        "hisp": "hispanic",
+        "his": "hispanic",
+
+        "White": "white",
+        "white": "white",
+        "White or Caucasian": "white",
+
+        "Native American": "native",
+        "Native American or Alaska Native": "native",
+        "American Indian/Native American or Alaska Native": "native",
+        "native": "native",
+
+        "Native Hawaiian or Other Pacific Islander": "other", 
+        "Other": "other", 
+        "other": "other",
+
+        "Arab American": "arab",
+        "middleEastern": "arab"
+
+    },
+    "age": {
+        "18 - 24": 18,
+        "18 - 24 ": 18,
+        "18-24": 18,
+        
+        "25 - 34": 25,
+        "25-29": 25,
+        "30-34": 25,
+
+        "35 - 44": 35, 
+        "35-39": 35,
+        "40-44": 35,
+
+        "45 - 54": 45,
+        "45-49": 45,
+        "50-54": 45,
+
+        "54-59": 55,
+        "55 - 64": 55,
+        "60-64": 55,
+        
+        "65 or older": 65,
+        ">65": 65 
+    },
+    "ideology": {
+        "1.0": "left",
+        "0.5": "left",
+        "Democrat": "left",
+        "liberal": "left",
+        "mod-liberal": "left",
+
+        "-1.0": "right",
+        "-0.5": "right",
+        "Republican": "right",
+        "cons": "right",
+        "mod-cons": "right",
+
+        "0.0": "other",
+        "libert": "other",
+        "other": "other"
+    },
+    "education": {
+        "High school diploma or GED": "high_school_diploma", 
+        "Some college, but no degree": "high_school_diploma", 
+        "High school diploma or equivalent": "high_school_diploma",
+        
+        "Some high school or less": "less_than_high_school", 
+        "Less than a high school diploma": "less_than_high_school",
+
+        "Graduate or professional degree (MA, MS, MBA, PhD, JD, MD, DDS etc.)": "graduate_degree",
+        "Graduate degree": "graduate_degree",
+
+        "College degree": "bachelors_degree",
+        "Bachelors degree": "bachelors_degree",
+
+        "Associates or technical degree": "other",
+        "Other": "other"
+
+    },
+    "occupation": {
+
+    }
+}
