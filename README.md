@@ -36,7 +36,3 @@ Given the specified lexicon (default uses a cleaned version of Hurtlex-core-EN),
 
 
 #### TODO:
-- [] Add annotator id
-- [] Add unique text id
-- [] Keep original label
-Add them in the dictionary and preserve them.

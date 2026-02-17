@@ -40,7 +40,6 @@
 
         "Arab American": "arab",
         "middleEastern": "arab"
-
     },
     "age": {
         "18 - 24": 18,
@@ -81,7 +80,9 @@
 
         "0.0": "other",
         "libert": "other",
-        "other": "other"
+        "other": "other",
+        "Independent": "other"
+
     },
     "education": {
         "High school diploma or GED": "high_school_diploma", 

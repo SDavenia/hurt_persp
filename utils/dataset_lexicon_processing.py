@@ -4,6 +4,7 @@
 ## Label column: the label of the post/tweet/comment (need to select the specific dataset label)
 ## Sociodemographics column
 
+import ast
 import nltk
 import emoji
 import pandas as pd
@@ -159,7 +160,8 @@ lexicon_info = {
 class StandardDataset:
     def __init__(self, 
                  dataset_id: str,
-                 dataset_path: str):
+                 dataset_path: str,
+                 preprocess: bool = True):
 
         self.dataset_id = dataset_id
         self.dataset_path = dataset_path
@@ -168,7 +170,7 @@ class StandardDataset:
         self.dataset = self._load_dataset()
         self.preprocess_fns = self.dataset_info['preprocess_fns']
 
-        #### VARIABLE NAMES STANDARDIZATION #### -> TODO: Move into a separate function for better readability and modularity
+        #### VARIABLE NAMES STANDARDIZATION #### -> TODO: Move into a separate function for better readability
         # Rename the dataset-specific text column to text 
         self.dataset.rename(columns={self.dataset_info['text_column']: 'text'}, inplace=True)
 
@@ -187,21 +189,26 @@ class StandardDataset:
         # Copy the original label column to a new column 'original_label' before preprocessing, to keep track of the original labels in case we want to do further analysis later.
         self.dataset['original_label'] = self.dataset[self.dataset_info['label_column']].copy()
 
-        # TODO: Remove later: filter to keep only first 10 rows to test code
-        # self.dataset = self.dataset.head(10)
-        
-        # Strip the text from emojis and keep them in a separate column
-        self.dataset['text_noemoji'], self.dataset['emojis'] = zip(*self.dataset['text'].apply(self.strip_emojis))        
+        # If we only want to extract dataset statistics, no need to keep all those
+        if preprocess:
+            # TODO: Remove later: filter to keep only first 10 rows to test code
+            # self.dataset = self.dataset.head(10)
+            
+            # Strip the text from emojis and keep them in a separate column
+            self.dataset['text_noemoji'], self.dataset['emojis'] = zip(*self.dataset['text'].apply(self.strip_emojis))        
 
-        # Preprocess the dataset (same for all datasets, extract lemmas from the text column and add a lemma column containing a list of lemmas for each text):
-        self._add_words_stems_lemmas_column()
-        
-        # Preprocess the dataset (dataset specific), need to preprocess sociodemographics and labels which are dataset specific:
-        self._preprocess_dataset()
+            # Preprocess the dataset (same for all datasets, extract lemmas from the text column and add a lemma column containing a list of lemmas for each text):
+            self._add_words_stems_lemmas_column()
+            
+            # Preprocess the dataset (dataset specific), need to preprocess sociodemographics and labels which are dataset specific:
+            self._preprocess_dataset()
 
-        # Keep only columns of interest
-        self.dataset = self.dataset[['annotator_id', 'text_id', 'text', 'emojis', 'lemmas', 'lemmas_with_pos','words', 'stems', 'sociodemographics', 'label', 'original_label']]
-        #self.dataset[['text', 'emojis', 'lemmas', 'words', 'stems', 'sociodemographics', 'label']].to_csv('try.csv', index=False)
+            # Keep only columns of interest
+            self.dataset = self.dataset[['annotator_id', 'text_id', 'text', 'emojis', 'lemmas', 'lemmas_with_pos','words', 'stems', 'sociodemographics', 'label', 'original_label']]
+            #self.dataset[['text', 'emojis', 'lemmas', 'words', 'stems', 'sociodemographics', 'label']].to_csv('try.csv', index=False)
+        else: 
+            self._preprocess_dataset()
+            self.dataset = self.dataset[["annotator_id", "text_id", "text", "original_label", "sociodemographics", "label"]]
     
     def print_info(self):
         print(f"Dataset ID: {self.dataset_id}")
@@ -635,8 +642,69 @@ class ExampleExtractor:
             
         return output_df
 
+########### POSTPROCESSING FUNCTIONS
+def sanitize_none_string(dict_string):
+    # Prefer not to say should be mapped to None
+    if "'Prefer not to say'" in dict_string:
+        dict_string = dict_string.replace("'Prefer not to say'", "None")
+    
+    if 'nan' in dict_string:
+        dict_string = dict_string.replace('nan', 'None')
+    if "'na'" in dict_string:
+        dict_string = dict_string.replace("'na'", "None")
+    
+    dictionary = ast.literal_eval(dict_string)
+    if dictionary.get('ideology', None):
+        dictionary['ideology'] = str(dictionary['ideology']) if dictionary['ideology'] is not None else None
+    
+    return dictionary
+
+def map_sociodemographics(socio_dict, sociodemographic_mappings):
+    if not isinstance(socio_dict, dict):
+        return None
+    
+    mapped_dict = {}
+    
+    for key, value in socio_dict.items():
+        if key not in sociodemographic_mappings:
+            mapped_dict[key] = None
+            continue
+        
+        mapping = sociodemographic_mappings[key]
+        
+        # Validate non-age fields
+        if key != 'age':
+            if value is not None and str(value) not in mapping:
+                raise ValueError(f"Unmapped value for {key}: {value}")
+            mapped_value = mapping.get(str(value), None)
+        
+        # Special handling for age
+        else:
+            new_value = value
+            if value is None:
+                mapped_value = None
+
+            else:
+                # If it is string, first convert to numeric and then apply age mappings.
+                if type(value) == str:
+                    new_value = mapping.get(value, None)
+
+                age = float(new_value)
+                if age >= 100:
+                    mapped_value = None
+                elif age < 25:
+                    mapped_value = "18-24"
+                elif age < 35:
+                    mapped_value = "25-34"
+                elif age < 45:
+                    mapped_value = "35-44"
+                elif age < 55:
+                    mapped_value = "45-54"
+                elif age < 65:
+                    mapped_value = "55-64"
+                else:
+                    mapped_value = "65 or older"
             
-
-    
-    
-
+        mapped_dict[key] = mapped_value
+        
+    return mapped_dict

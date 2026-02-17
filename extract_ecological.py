@@ -1,6 +1,8 @@
 import os
+import json
 import pandas as pd
 from utils.dataset_lexicon_processing import StandardLexicon, StandardDataset, ExampleExtractor
+from utils.dataset_lexicon_processing import sanitize_none_string, map_sociodemographics
 
 
 """ EXPECTED OUTPUT FORMAT:
@@ -32,6 +34,7 @@ dataset_paths = {
 
 output_dir = "data/extracted_examples"
 match_by = 'lemma_with_pos'  # Options: 'lemma', 'word', 'lemma_with_pos', 'stem'
+sociodemographic_mapping_data_path = "data/sociodemographic_mappings.json"
 
 def main():
     ########### Load and preprocess the lexicon ###########
@@ -51,11 +54,25 @@ def main():
         results_df = extractor.results_df
         all_output_dfs.append(results_df)
     
-    # Combine results from all datasets and save to output directory
+    ############ Combine results from all datasets and save to output directory
     final_output_df = pd.concat(all_output_dfs, ignore_index=True)
     os.makedirs(output_dir, exist_ok=True)  
-    final_output_df.to_csv(f'{output_dir}/extracted_examples_{match_by}.csv', index=False)
+    output_df_path = f'{output_dir}/extracted_examples_{match_by}.csv'
+    final_output_df.to_csv(output_df_path, index=False)
     print(f"Extracted examples saved to {output_dir}/extracted_examples_{match_by}.csv")
+
+    ############ Postprocess to standardize sociodemographic traits across the various datasets -> TODO: Ideally at some point move all to the dataset class
+    df = pd.read_csv(output_df_path)
+    with open(sociodemographic_mapping_data_path, 'r') as f:
+        sociodemographic_mappings = json.load(f)
+
+    # Sanitize and standardize None 
+    df['sociodemographics'] = [sanitize_none_string(x) for x in df['sociodemographics']]
+    
+    # Map the sociodemographics while also keeping the original column.
+    df['sociodemographics_mapped'] = df['sociodemographics'].apply(lambda x: map_sociodemographics(x, sociodemographic_mappings))
+    output_df_mapped_path = f"{output_dir}/extracted_examples_{match_by}_mapped.csv"
+    df.to_csv(output_df_mapped_path, index=False)
 
 if __name__ == "__main__":
     main()
