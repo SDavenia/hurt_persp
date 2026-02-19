@@ -18,3 +18,6 @@ data/extracted_examples/
 
 # Misc
 try.ipynb
+
+# Old plotting
+obtain_plots_text_radar.ipynb

@@ -170,6 +170,16 @@ class StandardDataset:
         self.dataset = self._load_dataset()
         self.preprocess_fns = self.dataset_info['preprocess_fns']
 
+        self._handle_duplicates()
+
+        # Check duplicates in text_id and annotation id columns
+        if self.dataset_info.get('text_id_column', None) and self.dataset_info.get('annotator_id_column', None):
+            text_id_col = self.dataset_info['text_id_column']
+            annotator_id_col = self.dataset_info['annotator_id_column']
+            duplicates = self.dataset[self.dataset.duplicated(subset=[text_id_col, annotator_id_col], keep=False)]
+            if len(duplicates) > 0:
+                raise ValueError(f"Found {len(duplicates)} duplicate rows in the dataset based on {text_id_col} and {annotator_id_col}. Please investigate these duplicates further and remove them before proceeding.")
+
         #### VARIABLE NAMES STANDARDIZATION #### -> TODO: Move into a separate function for better readability
         # Rename the dataset-specific text column to text 
         self.dataset.rename(columns={self.dataset_info['text_column']: 'text'}, inplace=True)
@@ -215,7 +225,22 @@ class StandardDataset:
         print(f"Dataset Path: {self.dataset_path}")
         print(f"Dataset Info: {self.dataset_info}")
         print(f"Dataset Sample:\n{self.dataset.head(5)}")
-        
+    
+    def _handle_duplicates(self):
+        label_col = self.dataset_info['label_column']
+        text_col = self.dataset_info['text_column']
+        annotator_id_col = self.dataset_info['annotator_id_column']
+        text_id_col = self.dataset_info['text_id_column']
+
+        # Find all rows which are duplicates based on label, text, annotator id and text_id
+        duplicates = self.dataset[self.dataset.duplicated(subset=[label_col, text_col, annotator_id_col, text_id_col], keep=False)]
+        # Keep only one row for each duplicate group, and drop the rest
+        self.dataset = self.dataset.drop_duplicates(subset=[label_col, text_col, annotator_id_col, text_id_col], keep='first').reset_index(drop=True)
+
+        # Find all rows which are duplicates based on annotator id and text id
+        duplicates_all = self.dataset[self.dataset.duplicated(subset=[annotator_id_col, text_id_col], keep=False)]
+        # Remove all of them, since we cannot be sure which one is the correct one
+        self.dataset = self.dataset.drop_duplicates(subset=[annotator_id_col, text_id_col], keep=False).reset_index(drop=True)
 
     def _load_dataset(self):
         # Load the dataset
@@ -526,7 +551,22 @@ class StandardLexicon:
                 return lemma
         return token
     
-    
+    def _remove_duplicates(self, match_by):
+        # There can be multiple rows with same lemma_with_pos but different tags, so we merge them by grouping by lemma_with_pos and merging the tags into a set.
+        if 'tag' in self.lexicon.columns:
+            if match_by == 'lemma_with_pos':
+                self.lexicon = self.lexicon.groupby('lemma_with_pos').agg({
+                    'id': 'first',
+                    'word': 'first',
+                    'pos': 'first',
+                    'lemma': 'first',
+                    'stem': 'first',
+                    'is_emoji': 'first',
+                    'tag': lambda x: set.union(*x)  # Merge tags into a set
+                }).reset_index()
+            else:
+                raise NotImplementedError("STOP")
+
 
 
 class ExampleExtractor:
@@ -554,6 +594,9 @@ class ExampleExtractor:
         self.standard_dataset = standard_dataset
         self.standard_lexicon = standard_lexicon
         self.match_by = match_by
+        
+        # There could be duplicates after lemmatization, e.g. hurtlex contains both dog and dogs
+        self.standard_lexicon._remove_duplicates(match_by=match_by)
 
         self.lexicon_has_tags = self.standard_lexicon.lexicon_info.get('tags', None) is not None
 

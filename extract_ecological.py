@@ -18,7 +18,7 @@ RESULTS DATAFRAME:
 """
 
 lexicon_id = 'hurtlexcore_EN_clean_with_tags'
-lexicon_path = 'data/lexicon/hurtlexcore_EN_clean_with_tags.csv'
+lexicon_path = 'data/lexicon/hurtlexcore_EN_clean_with_tags_no_duplicates.csv'
 
 # lexicon_id = 'hurtlex_core_EN'
 # lexicon_path = 'data/lexicon/hurtlexcore_EN.tsv'
@@ -73,6 +73,7 @@ def main():
     df['sociodemographics_mapped'] = df['sociodemographics'].apply(lambda x: map_sociodemographics(x, sociodemographic_mappings))
     output_df_mapped_path = f"{output_dir}/extracted_examples_{match_by}_mapped.csv"
     df.to_csv(output_df_mapped_path, index=False)
+    print(f"Extracted examples with mapped sociodemographics saved to {output_dir}/extracted_examples_{match_by}_mapped.csv")
 
 if __name__ == "__main__":
     main()
