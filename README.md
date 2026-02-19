@@ -36,3 +36,6 @@ Given the specified lexicon (default uses a cleaned version of Hurtlex-core-EN),
 
 
 #### TODO:
+Check some of the ones which look weird from the plots!
+Handle ties in aggregation step
+e.g. left annotating less offensive across most categories -> torna guardando i dati
