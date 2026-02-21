@@ -17,8 +17,8 @@ RESULTS DATAFRAME:
 4  worthless  social_media_posts              You are worthless  offensive
 """
 
-lexicon_id = 'hurtlexcore_EN_clean_with_tags'
-lexicon_path = 'data/lexicon/hurtlexcore_EN_clean_with_tags_no_duplicates.csv'
+lexicon_id = 'hurtlexcore_EN_clean_with_tags_no_duplicates_corrected'
+lexicon_path = 'data/lexicon/hurtlexcore_EN_clean_with_tags_no_duplicates_corrected.csv'
 
 # lexicon_id = 'hurtlex_core_EN'
 # lexicon_path = 'data/lexicon/hurtlexcore_EN.tsv'

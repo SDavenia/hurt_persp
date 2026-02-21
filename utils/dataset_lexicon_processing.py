@@ -152,6 +152,11 @@ lexicon_info = {
             },
             'tags': 'category',
             'preprocess_fn': 'hurtlex_preprocess'
+        },
+    'hurtlexcore_EN_clean_with_tags_no_duplicates_corrected': {
+            'load_params': None,
+            'tags': 'category',
+            'preprocess_fn': 'hurtlex_preprocess'
         }
     }
 
@@ -464,7 +469,6 @@ class StandardLexicon:
         self.lexicon_path = lexicon_path
         self.lexicon_info = lexicon_info[lexicon_id]
         self.lexicon = self._load_lexicon()
-        # print(self.lexicon.head())
 
         self.lemmatizer = WordNetLemmatizer()
         self.stemmer = PorterStemmer()
@@ -481,7 +485,7 @@ class StandardLexicon:
     def _load_lexicon(self):
         """Load lexicon from file based on configuration"""
         load_params = self.lexicon_info.get('load_params', {})
-        return pd.read_csv(self.lexicon_path, **load_params)
+        return pd.read_csv(self.lexicon_path, **load_params) if load_params else pd.read_csv(self.lexicon_path)
     
     def _preprocess_lexicon(self):
         preprocess_fn = self.lexicon_info.get('preprocess_fn', None)

@@ -1,0 +1,342 @@
+id,word,category,category_full
+EN4735,bird (noun),an,animal
+EN6483,melon (noun),or,plants
+EN534,dumbass (noun),ddp,cognitive disabilities and diversity 
+EN6078,nigga (noun),ps,negative stereotypes ethnic slurs
+EN2751,breeding (noun),cds|an,derogatory words | animals
+EN2349,fuckin' (noun),sex,sexual words 
+EN5738,poor (noun),is,words related to social and economic disadvantage
+EN7099,chinese (adjective),ps,negative stereotypes ethnic slurs
+EN5733,planet (noun),qas,with potential negative connotations
+EN339,trash (noun),cds|qas,derogatory words | with potential negative connotations
+EN4268,sleep with (verb),sex,sexual words 
+EN4700,clown (noun),cds|dmc,derogatory words | moral and behavioral defects
+EN1450,bored (noun),svp|qas,words related to the seven deadly sins of the Christian tradition|with potential negative connotations
+EN4916,ignorant (adjective),ddp,cognitive disabilities and diversity
+EN7353,sneak (verb),re,felonies and words related to crime and immoral behavior
+EN873,victim (noun),re,felonies and words related to crime and immoral behavior
+EN762,traders (noun),qas,with potential negative connotations
+EN413,beast (noun),an|ddp,animals | cognitive disabilities and diversity
+EN7417,hot (adjective),re|qas,felonies and words related to crime and immoral behavior | with potential negative connotations
+EN7470,jewish (adjective),ps,negative stereotypes ethnic slurs
+EN1934,bitch (noun),an|pr,animals | words related to prostitution
+EN5625,yahoo (noun),cds|dmc,derogatory words | moral and behavioral defects
+EN3905,false (adjective),dmc,moral and behavioral defects
+EN58,abusive (noun),re,felonies and words related to crime and immoral behavior
+EN6512,listen in (verb),dmc,moral and behavioral defects
+EN1793,camp (noun),qas,with potential negative connotations
+EN5753,pumpkin (noun),or,plants
+EN2264,professor (noun),pa,professions and occupations
+EN1688,mass (noun),qas,with potential negative connotations
+EN2356,wtf (noun),cds|qas,derogatory words | with potential negative connotations
+EN4782,disabled (noun),ddf,physical disabilities and diversity
+EN4076,fascism (noun),cds|re,derogatory words|felonies and words related to crime and immoral behavior
+EN7406,hard (adjective),sex,sexual words
+EN7703,terrorism (noun),re,felonies and words related to crime and immoral behavior
+EN3903,fold (noun),asf,female genitalia
+EN2096,chinese (noun),ps,negative stereotypes ethnic slurs
+EN2205,problem (noun),cds|qas,derogatory words|with potential negative connotations
+EN6379,teasing (noun),sex,sexual words 
+EN4981,fraud (noun),dmc|re,moral and behavioral defects|felonies and words related to crime and immoral behavior
+EN4913,ignorance (noun),ddp,cognitive disabilities and diversity
+EN5474,cop (noun),pa,professions and occupations
+EN439,violation (noun),re,felonies and words related to crime and immoral behavior
+EN2732,cross (noun),cds|ps,derogatory words | negative stereotypes ethnic slurs
+EN5750,pride (noun),cds|svp,derogatory words | words related to the seven deadly sins of the Christian tradition
+EN5440,nerd (noun),cds,derogatory words
+EN6979,politician (noun),pa,professions and occupations
+EN6509,unfortunate (noun),is|ps,words related to social and economic disadvantage | negative stereotypes ethnic slurs
+EN976,dude (noun),cds|qas,derogatory words| with potential negative connotations
+EN1074,gang (noun),cds,derogatory words
+EN3262,superior (noun),pa|qas,professions and occupations|with potential negative connotations
+EN3179,hypocrisy (noun),dmc,moral and behavioral defects
+EN7524,fast (adjective),dmc,moral and behavioral defects
+EN5010,liar (noun),dmc,moral and behavioral defects
+EN488,bean (noun),or,plants
+EN2053,scum (noun),dmc|cds|qas,moral and behavioral defects| derogatory words | with potential negative connotations
+EN4270,screw (verb),sex,sexual words
+EN4276,score (verb),sex|re,sexual words| felonies and words related to crime and immoral behavior
+EN4847,nonsense (noun),ddp,cognitive disabilities and diversity
+EN7405,severe (adjective),re,felonies and words related to crime and immoral behavior
+EN1799,prisoners (noun),re,felonies and words related to crime and immoral behavior
+EN1994,cheek (noun),cds|dmc,derogatory words| moral and behavioral defects
+EN3026,criminals (noun),cds|re,derogatory words | felonies and words related to crime and immoral behavior
+EN5833,shark (noun),an,animals
+EN8016,force (noun),re,felonies and words related to crime and immoral behavior
+EN4990,fake (noun),dmc,moral and behavioral defects
+EN6467,killing (noun),re,felonies and words related to crime and immoral behavior
+EN7085,blind (adjective),ddf,physical disabilities and diversity
+EN3353,fox (noun),an|cds,animal|derogatory words
+EN5062,unfortunate (adjective),is|ps,words related to social and economic disadvantage | negative stereotypes ethnic slurs
+EN4732,baby (noun),cds,derogatory words
+EN7544,snake (noun),an,animals
+EN7325,frog (noun),an,animals
+EN3694,rude (adjective),cds|dmc,derogatory words | moral and behavioral defects
+EN1735,villain (noun),cds|dmc|re,derogatory words | moral and behavioral defects | felonies and words related to crime and immoral behavior
+EN4295,illegal (adjective),re,felonies and words related to crime and immoral behavior
+EN400,animal (noun),an|ddp,animals | cognitive disabilities and diversity
+EN1126,billy (noun),ddp,cognitive disabilities and diversity
+EN521,simple (noun),cds|ddp,derogatory words | cognitive disabilities and diversity
+EN5755,pup (noun),cds|an,derogatory words| animals
+EN441,rape (noun),re,felonies and words related to crime and immoral behavior
+EN7373,nasty (adjective),dmc,moral and behavioral defects
+EN4143,foul (adjective),dmc,moral and behavioral defects
+EN2394,bunny (noun),an,animals
+EN7476,lewd (adjective),svp|sex,words related to the seven deadly sins of the Christian tradition| sexual words
+EN7292,disappointing (adjective),qas,with potential negative connotations
+EN6825,rage (verb),svp,words related to the seven deadly sins of the Christian tradition
+EN7150,lame (adjective),cds|ddf,derogatory words| physical disabilities and diversity
+EN956,lie (noun),cds|dmc|qas,derogatory words | moral and behavioral defects | with potential negative connotations
+EN6631,new money (noun),qas,with potential negative connotations
+EN7564,stuff (noun),sex,sexual words
+EN3318,can (noun),cds,derogatory words 
+EN6787,make up (verb),qas,with potential negative connotations
+EN2260,prof (noun),pa,professions and occupations
+EN2159,goat (noun),an,animals
+EN4328,hack (noun),cds|pa,derogatory words| professions and occupations
+EN4612,herd (noun),an|cds,animals|derogatory words
+EN5196,jealous (adjective),svp,words related to the seven deadly sins of the Christian tradition
+EN5613,rude (noun),dmc,moral and behavioral defects
+EN3783,mistress (noun),cds|pr,derogatory words | words related to prostitution
+EN6903,wild (adjective),re|dmc,felonies and words related to crime and immoral behavior| moral and behavioral defects
+EN6993,fake (adjective),dmc,moral and behavioral defects
+EN5143,member (noun),asm,male genitalia
+EN1636,middle-class (noun),qas,with potential negative connotations
+EN3106,jerry (noun),ps,negative stereotypes ethnic slurs
+EN1474,cow (noun),an|cds,animals | derogatory words
+EN6461,slayer (noun),re,felonies and words related to crime and immoral behavior
+EN1075,mob (noun),cds|re|qas,derogatory words | felonies and words related to crime and immoral behavior| with potential negative connotations
+EN2468,gay (noun),om,words related to homosexuality 
+EN4382,booty (noun),re|sex,felonies and words related to crime and immoral behavior| sexual words
+EN6645,stuff (verb),cds|sex,derogatory words|sexual words
+EN5057,wrong (adjective),cds|dmc,derogatory words| moral and behavioral defects
+EN4564,jewish (noun),ps,negative stereotypes ethnic slurs
+EN1888,coward (noun),cds,derogatory words
+EN3105,hun (noun),ps,negative stereotypes ethnic slurs
+EN4871,poorly (noun),is,words related to social and economic disadvantage
+EN5297,toilet (noun),qas,with potential negative connotations
+EN2395,晴 (noun),an,animals
+EN305,joke (noun),cds,derogatory words
+EN2806,lad (noun),cds,derogatory words
+EN1026,tale (noun),cds|qas,derogatory words | with potential negative connotations
+EN6431,murder (noun),re,felonies and words related to crime and immoral behavior
+EN3207,butt (noun),om,words related to homosexuality
+EN1096,band (noun),cds,derogatory words
+EN3914,fools (noun),cds|dmc|ddp,derogatory words | moral and behavioral defects| cognitive disabilities and diversity
+EN8253,nazi (noun),cds|re ,derogatory words| felonies and words related to crime and immoral behavior
+EN487,dome (noun),sex|asm,sexual words| male genitalia
+EN294,follower (noun),qas,with potential negative connotations
+EN5045,incompetent (adjective),ddp,cognitive disabilities and diversity
+EN2438,queer (noun),om,words related to homosexuality 
+EN1778,bad (adjective),dmc,moral and behavioral defects
+EN3947,foul (noun),dmc,moral and behavioral defects
+EN1006,chaos (noun),cds,derogatory words
+EN3148,dislike (noun),cds,derogatory words
+EN3808,fascist (noun),cds|ps,derogatory words | negative stereotypes ethnic slurs
+EN496,stupidity (noun),cds|ddp,derogatory words| cognitive disabilities and diversity
+EN2457,fairy (noun),om,words related to homosexuality 
+EN7132,coward (adjective),cds,derogatory words
+EN8009,violence (noun),re,felonies and words related to crime and immoral behavior
+EN4928,inflation (noun),cds,derogatory words
+EN3928,freak (noun),cds,derogatory words
+EN84,abused (noun),re,felonies and words related to crime and immoral behavior
+EN1909,moron (noun),ds|ddp|ps,derogatory words | cognitive disabilities and diversity | negative stereotypes ethnic slurs
+EN5110,lip (noun),cds,derogatory words
+EN4975,ladies (noun),om,words related to homosexuality
+EN5987,teaser (noun),cds|dmc,derogatory words| moral and behavioral defects
+EN5681,cruel (adjective),dmc,moral and behavioral defects
+EN758,trader (noun),qas,with potential negative connotations
+EN7409,bull (noun),cds,derogatory words
+EN4284,have sex (verb),sex,sexual words
+EN2397,rabbit (noun),an,animals
+EN6780,pig (verb),cds,derogatory words
+EN4919,ignorant (noun),ddp,cognitive disabilities and diversity
+EN3861,fish (noun),an,animals
+EN3124,dirt (noun),cds|qas,derogatory words| with potential negative connotations
+EN6579,blow (verb),qas|sex,with potential negative connotations| sexual words
+EN5737,pole (noun),asm,male genitalia
+EN6703,choke (verb),cds,derogatory words
+EN2195,dick (noun),asm,male genitalia
+EN2802,compliance (noun),qas,with potential negative connotations
+EN7558,low (adjective),dmc,moral and behavioral defects
+EN7400,miserable (adjective),dmc|is|qas,moral and behavioral defects | words related to social and economic disadvantage | with potential negative connotations
+EN4584,jews (noun),ps,negative stereotypes ethnic slurs
+EN7504,slow (adjective),ddp,cognitive disabilities and diversity
+EN6702,die (verb),cds,derogatory words
+EN7260,robbed (noun),re,felonies and words related to crime and immoral behavior
+EN1850,firm (noun),cds|qas ,derogatory words| with potential negative connotations
+EN1791,hole (noun),asf|an|cds|qas,female genitalia| animals | derogatory words | with potential negative connotations
+EN6095,niggas (noun),ps,negative stereotypes ethnic slurs
+EN870,stupid (noun),cds|ddp,derogatory words | cognitive disabilities and diversity 
+EN2084,枢 (noun),an,animals
+EN5135,dong (noun),asm,male genitalia
+EN2612,bug (noun),an,animals
+EN3472,insane (adjective),ddp|qas,cognitive disabilities and diversity | with potential negative connotations
+EN1125,criminal (noun),cds|dmc|re,derogatory words | moral and behavioral defects | felonies and words related to crime and immoral behavior
+EN2970,green (adjective),ddp,cognitive disabilities and diversity
+EN4730,doll (noun),cds,derogatory words
+EN5746,proud (noun),svp,words related to the seven deadly sins of the Christian tradition
+EN6982,tired (adjective),qas, with potential negative connotations
+EN3037,crime (noun),cds|re,derogatory words | felonies and words related to crime and immoral behavior
+EN6930,cross (adjective),svp,words related to the seven deadly sins of the Christian tradition
+EN366,crowd (noun),cds|qas,derogatory words| with potential negative connotations
+EN879,dope (noun),re|ddp,felonies and words related to crime and immoral behavior | cognitive disabilities and diversity 
+EN693,balls (noun),asm|qas,male genitalia | with potential negative connotations
+EN2358,fucked (noun),sex,sexual words
+EN5158,penis (noun),asm,male genitalia
+EN5710,evil (adjective),dmc,moral and behavioral defects
+EN6936,pirates (noun),re,felonies and words related to crime and immoral behavior
+EN6673,con (verb),re,felonies and words related to crime and immoral behavior
+EN1891,chicken (noun),an|cds,animals | derogatory words
+EN2640,craving (noun),svp,words related to the seven deadly sins of the Christian tradition
+EN2871,lady (noun),om,words related to homosexuality
+EN6590,spoil (verb),qas,with potential negative connotations
+EN620,mean (noun),is|svp, words related to social and economic disadvantage | words related to the seven deadly sins of the Christian tradition
+EN4368,theft (noun),cds|re,derogatory words | felonies and words related to crime and immoral behavior
+EN1019,beef (noun),an,animals
+EN3247,seat (noun),om|sex,words related to homosexuality|sexual words
+EN7533,grind (noun),cds,derogatory words
+EN3069,crimes (noun),re,felonies and words related to crime and immoral behavior
+EN1484,boss (noun),cds|re|pa,derogatory words| felonies and words related to crime and immoral behavior| professions and occupations
+EN2323,screw (noun),asm|cds,male genitalia | derogatory words
+EN2590,waste (noun),cds|qas,derogatory words | with potential negative connotations
+EN5916,sheep (noun),an,animals
+EN4185,bush (noun),asf,female genitalia
+EN1856,casino (noun),cds|qas,derogatory words| with potential negative connotations
+EN1303,asshole (noun),cds|ddp,derogatory words | cognitive disabilities and diversity
+EN4286,have it off (verb),sex,sexual words
+EN2098,tribe (noun),cds|ps,derogatory words| negative stereotypes ethnic slurs
+EN4341,plug (noun),sex,sexual words
+EN444,raped (noun),re,felonies and words related to crime and immoral behavior
+EN3675,evil (noun),dmc,moral and behavioral defects
+EN2353,fuck (noun),sex,sexual words
+EN3254,bottom (noun),om,words related to homosexuality
+EN3890,mess (noun),cds|qas,derogatory words | with potential negative connotations
+EN6994,bastard (adjective),dmc,moral and behavioral defects
+EN4418,hoe (noun),pr,words related to prostitution
+EN1884,sissy (noun),cds,derogatory words
+EN699,egg (noun),asm|qas,male genitalia | with potential negative connotations
+EN7352,swipe (verb),re,felonies and words related to crime and immoral behavior
+EN4266,fuck (verb),sex,sexual words
+EN3142,disgusting (noun),qas,with potential negative connotations
+EN7876,是 (noun),an,animals
+EN1055,stupid (adjective),cds|ddp,derogatory words | cognitive disabilities and diversity
+EN6200,white (noun),ps,negative stereotypes ethnic slurs
+EN2164,瑞 (noun),an,animals
+EN2646,tease (noun),dmc,moral and behavioral defects
+EN1781,vile (adjective),dmc, moral and behavioral defects
+EN4274,get it on (verb),sex,sexual words
+EN6402,terrorist (noun),re,felonies and words related to crime and immoral behavior
+EN4963,cheat (noun),dmc,moral and behavioral defects
+EN1523,brown (noun),ps,negative stereotypes ethnic slurs
+EN1376,rip (noun),qas,with potential negative connotations
+EN6210,hispanic (noun),ps,negative stereotypes ethnic slurs
+EN4381,swag (noun),re|is,felonies and words related to crime and immoral behavior| words related to social and economic disadvantage
+EN3468,mad (adjective),qas|svp,with potential negative connotations | words related to the seven deadly sins of the Christian tradition
+EN1091,pack (noun),cds,derogatory words
+EN1227,dog (noun),an|cds|dmc,animals | derogatory words | moral and behavioral defects
+EN4909,incompetent (noun),ddp,cognitive disabilities and diversity
+EN916,slut (noun),pr,words related to prostitution
+EN4272,make out (verb),sex,sexual words
+EN2072,生 (noun),an,animals
+EN1762,bus (noun),cds,derogatory words
+EN1782,ugly (adjective),ddf|dmc,physical disabilities and diversity | moral and behavioral defects
+EN6548,clowns (noun),dmc,moral and behavioral defects
+EN3092,criminal (adjective),cds|re,derogatory words| felonies and words related to crime and immoral behavior 
+EN966,dudes (noun),cds,derogatory words
+EN516,idiot (noun),cds|ddp, derogatory words | cognitive disabilities and diversity
+EN6664,scam (verb),re,felonies and words related to crime and immoral behavior
+EN2194,tool (noun),asm,male genitalia
+EN4772,monkey (noun),cds|dmc|re,derogatory words | moral and behavioral defects | felonies and words related to crime and immoral behavior
+EN7315,fascist (adjective),cds|re,derogatory words| felonies and words related to crime and immoral behavior
+EN420,animals (noun),an|ddp,animals | cognitive disabilities and diversity
+EN7290,dirty (adjective),dmc,moral and behavioral defects
+EN79,abuse (noun),re,felonies and words related to crime and immoral behavior
+EN7501,middle-class (adjective),qas,with potential negative connotations
+EN4045,rage (noun),an|svp,animals | words related to the seven deadly sins of the Christian tradition
+EN2364,what the fuck? (noun),qas,with potential negative connotations
+EN684,ball (noun),asm|qas,male genitalia | with potential negative connotations
+EN861,mark (noun),cds,derogatory words 
+EN5483,mafia (noun),cds|re,derogatory words | felonies and words related to crime and immoral behavior
+EN1298,bastard (noun),cds|dmc,derogatory words | moral and behavioral defects
+EN4729,babe (noun),cds,derogatory words
+EN8181,traitor (noun),dmc,moral and behavioral defects
+EN6194,asian (noun),ps,negative stereotypes ethnic slurs
+EN763,trading (noun),qas,with potential negative connotations
+EN2332,fucking (noun),sex,sexuals words
+EN7747,torture (noun),re,felonies and words related to crime and immoral behavior
+EN1789,trap (noun),an| cds ,animals| derogatory words
+EN513,fool (noun),cds|ddp|dmc,derogatory words | cognitive disabilities and diversity | moral and behavioral defects 
+EN6459,killer (noun),re,felonies and words related to crime and immoral behavior
+EN7134,yellow (adjective),cds|ps,derogatory words | negative stereotypes ethnic slurs
+EN7349,hook (verb),re|pr,felonies and words related to crime and immoral behavior| words related to prostitution
+EN732,savage (noun),an|cds|ddp|dmc|ps|qas,animals | derogatory words | cognitive disabilities and diversity | moral and behavioral defects | negative stereotypes ethnic slurs | with potential negative connotations 
+EN1165,black (noun),ps,negative stereotypes ethnic slurs
+EN2198,cock (noun),asm,male genitalia
+EN7142,violent (adjective),re,felonies and words related to crime and immoral behavior
+EN4889,poverty (noun),is,words related to social and economic disadvantage
+EN5680,brutal (adjective),an|dmc,animals | moral and behavioral defects
+EN6658,binge (verb),cds,derogatory words
+EN703,greedy (adjective),svp,words related to the seven deadly sins of the Christian tradition
+EN543,ass (noun),an|sex|om|ddp,animals | sexual words | words related to homosexuality| cognitive disabilities and diversity
+EN7685,terrorists (noun),re,felonies and words related to crime and immoral behavior
+EN7055,babies (noun),cds,derogatory words
+EN1443,boring (noun),svp,words related to the seven deadly sins of the Christian tradition
+EN330,aggressive (adjective),svp,words related to the seven deadly sins of the Christian tradition
+EN4043,fury (noun),an|re|svp,animals | felonies and words related to crime and immoral behavior | words related to the seven deadly sins of the Christian tradition
+EN1880,caste (noun),qas,with potential negative connotations
+EN2815,pussy (noun),asf|an,female genitalia | animal
+EN4277,bang (verb),sex,sexual words
+EN2795,rookie (noun),cds,derogatory words
+EN4314,盛 (noun),an,animals
+EN2206,trouble (noun),cds,derogatory words
+EN4628,homeless (noun),dmc| is,words related to social and economic disadvantage| moral and behavioral defects
+EN1057,dumb (adjective),cds|ddp,derogatory words | cognitive disabilities and diversity
+EN6924,sharp (adjective),cds,derogatory words
+EN1481,head (noun),cds|sex,derogatory words|sexual words
+EN338,rubbish (noun),cds|ddp|qas, derogatory words | cognitive disabilities and diversity | with potential negative connotations
+EN5176,scheme (verb),cds,derogatory words
+EN5454,lewd (noun),svp,words related to the seven deadly sins of the Christian tradition
+EN8021,violent (noun),re,felonies and words related to crime and immoral behavior
+EN402,creature (noun),an|ddp,animals | cognitive disabilities and diversity
+EN1487,chief (noun),cds|pa|qas,derogatory words| professions and occupations
+EN2070,dogs (noun),an,animals
+EN602,greed (noun),svp,words related to the seven deadly sins of the Christian tradition
+EN2676,crew (noun),qas,with potential negative connotations| with potential negative connotations
+EN5012,lazy (adjective),dmc|svp,moral and behavioral defects | words related to the seven deadly sins of the Christian tradition
+EN3925,joker (noun),cds|dmc,derogatory words | moral and behavioral defects
+EN3223,tail (noun),an|om,animals|words related to homosexuality
+EN6542,don (noun),qas,with potential negative connotations
+EN7502,silly (noun),cds|ddp,derogatory words | cognitive disabilities and diversity
+EN5709,baddest (noun),dmc,moral and behavioral defects
+EN4789,disability (noun),ddf,physical disabilities and diversity
+EN4387,loot (noun),re,felonies and words related to crime and immoral behavior
+EN4733,chick (noun),cds,derogatory words
+EN4918,innocent (adjective),ddp,cognitive disabilities and diversity
+EN7361,steal (verb),re,felonies and words related to crime and immoral behavior
+EN2200,devil (noun),cds|svp|dmc,derogatory words| words related to the seven deadly sins of the Christian tradition| moral and behavioral defects
+EN1235,pig (noun),an|cds|dmc,animals | derogatory words | moral and behavioral defects
+EN2482,twink (noun),om,words related to homosexuality
+EN2577,garbage (noun),cds|qas,derogatory words | with potential negative connotations
+EN7087,brown (adjective),ps,negative stereotypes ethnic slurs
+EN6992,stock (adjective),cds,derogatory words
+EN3426,dozens (noun),cds,derogatory words
+EN5682,fell (adjective),dmc,moral and behavioral defects
+EN6641,beg (verb),is,words related to social and economic disadvantage
+EN6466,kill (noun),re,felonies and words related to crime and immoral behavior
+EN4288,bed (verb),sex,sexual words
+EN306,trick (noun),cds|dmc,derogatory words| moral and behavioral defects
+EN7396,poor (adjective),is|qas,words related to social and economic disadvantage | with potential negative connotations
+EN1297,shit (noun),an|cds|dmc,animals | derogatory words | moral and behavioral defects
+EN5699,badly (adverb),dmc,moral and behavioral defects
+EN4377,steal (noun),cds|re,derogatory words | felonies and words related to crime and immoral behavior
+EN1056,silly (adjective),cds|ddp,derogatory words | cognitive disabilities and diversity
+EN666,nut (noun),asm|cds|qas,plant|male genitalia | derogatory words | with potential negative connotations
+EN2642,madness (noun),ddp,cognitive disabilities and diversity
+EN5677,savage (adjective),an|dmc,animals|moral and behavioral defects
+EN7397,pathetic (adjective),is|qas,words related to social and economic disadvantage | with potential negative connotations
+EN453,assault (noun),re,felonies and words related to crime and immoral behavior
+EN2376,fuckin (noun),sex,sexual words
+EN896,whore (noun),pr,words related to prostitution
+EN7770,torture (verb),re,felonies and words related to crime and immoral behavior
+EN1262,rat (noun),an|cds|dmc,animals | derogatory words | moral and behavioral defects
