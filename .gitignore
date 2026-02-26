@@ -7,6 +7,7 @@ __pycache__/
 
 # Figure
 figures/
+figures_radar/
 *.png
 
 # Environment
@@ -23,11 +24,15 @@ data/extracted_examples/
 try.ipynb
 view.ipynb
 extracted_examples_nltk
+old_lexicon/
 
 # Old plotting
 obtain_plots_text_radar.ipynb
+prepare_datasets_lexicon_data_old.py
+
 
 # Old R files
 sociodemographic_analysis.R
 tag_analysis.R
+sociodemographic_tag_analysis_full.R
 .Rhistory

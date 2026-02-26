@@ -10,56 +10,6 @@ def main():
     HF_TOKEN = os.getenv('HF_TOKEN')
     os.environ["HF_TOKEN"] = HF_TOKEN
 
-    #################### Lexicons setup ####################
-    # Add categories to Hurtlex core clean. 
-    # Download the Hurtlex version with tags:
-    # Check if hurtlexcore_EN_clean_with_tags.csv already exists, if not create it by merging the clean and the with_tags versions of Hurtlex.
-    if not os.path.exists("data/lexicon/hurtlexcore_EN_clean_with_tags.csv"):
-        url = "https://raw.githubusercontent.com/valeriobasile/hurtlex/refs/heads/master/lexica/EN/1.2/hurtlex_EN.tsv"
-        hurtlex_with_tags = pd.read_csv(url, sep="\t", header=0)
-        hurtlex_clean_notags = pd.read_csv("data/lexicon/hurtlexcore_EN_clean.csv", sep=",", header=None, names=["id", "word"])
-
-        # Group categories as a set per id
-        hurtlex_grouped = (
-            hurtlex_with_tags
-            .groupby('id')['category']
-            .apply(lambda x: set(x))   # <-- set instead of list
-            .reset_index()
-        )
-
-        # Merge with clean lexicon
-        hurtlex_clean_with_tags = pd.merge(
-            hurtlex_clean_notags,
-            hurtlex_grouped,
-            on='id',
-            how='left'
-        )
-        unique_categories = set().union(*hurtlex_clean_with_tags['category'].dropna())
-
-        print(
-            f"Hurtlex clean with tags has a total of "
-            f"{len(hurtlex_clean_with_tags)} entries, "
-            f"with {len(unique_categories)} unique categories."
-        )
-
-        hurtlex_clean_with_tags['category'] = (
-            hurtlex_clean_with_tags['category']
-            .apply(lambda x: '|'.join(sorted(x)) if isinstance(x, set) else x)
-        )
-
-        hurtlex_clean_with_tags.to_csv("data/lexicon/hurtlexcore_EN_clean_with_tags.csv", index=False, sep="\t")
-        
-    # ##### Measuring Hate Speech dataset #####
-    # mhs_folder = "data/datasets/mhs"
-    # os.makedirs(mhs_folder, exist_ok=True)
-    # ds = load_dataset("ucberkeley-dlab/measuring-hate-speech")
-    # ds = ds['train']
-    # ds.to_csv(os.path.join(mhs_folder, "data.csv"), index=False)
-
-    # print(f"Succesfully downloaded and saved Measuring Hate Speech dataset to {mhs_folder}")
-
-
-
     ##### Voiced dataset #####
     voiced_folder = "data/datasets/voiced"
     os.makedirs(voiced_folder, exist_ok=True)

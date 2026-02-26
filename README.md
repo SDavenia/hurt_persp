@@ -1,9 +1,10 @@
 ### Hurt Persp
+Repository for the paper "HurtLens: A Corpus Analysis of Perspectivist Hurtful Language Across Sociodemographic Perspectives".
 
 #### 0. Initial setup
 Create a `.env` file with HF valid key.
 
-The following datasets can be downloaded directly from Huggingface using the `prepare_datasets_lexicon_data.py`:
+The following datasets can be downloaded directly from Huggingface using the `prepare_datasets.py`:
 - POPQUORN
 - voiced: request access via HF beforehand.
 
@@ -11,7 +12,7 @@ For the other datasets:
 - SBIC: dowload `SBIC.v2.dev.csv, SBIC.v2.trn.csv, SBIC.v2.tst.csv` from [here](https://maartensap.com/social-bias-frames/) and place them in the `data/datasets/sbic` folder. The `prepare_datasets_lexicon_data.py` script will handle the conversion into a single .csv file that can be used downstream.
 - annWithAttitudes: request access to the authors, and place the large-study dataset in `data/datasets/annWithAttitudes/data.csv`.
 
-The lexicon considered for the analysis is included in the repository.
+The lexicon considered for the analysis is included in the repository under `data/lexicon/hurtlexcore_EN_clean_with_tags_no_duplicates_corrected.csv`.
 
 #### 1. Download and Preprocess datasets.
 ```
@@ -23,19 +24,19 @@ Downloads all publicly available datasets and stores them to `data/datasets/{dat
 ```
 python extract_ecological.py
 ```
-Given the specified lexicon (default uses a cleaned version of Hurtlex-core-EN), and the matching type (e.g. whether the lexicon lemma/word/stem should match with the corresponding ones in the dataset texts, defaults to lemma, defaults to `lemma_with_pos`), it saves a dataframe with columns `text`, `{lemma | lemma_with_pos | word | stem}, label, sociodemographics, dataset_source`, with standardized format for all_datasets.
+Given the specified lexicon (default uses a cleaned version of Hurtlex-core-EN), and the matching type (e.g. whether the lexicon lemma/word/stem should match with the corresponding ones in the dataset texts, defaults to lemma, defaults to `lemma_with_pos`), it saves a dataframe with columns `text,{lemma | lemma_with_pos | word | stem},label,sociodemographics,dataset_source,annotator_id,text_id,original_label,tag,sociodemographics_mapped`, with standardized format for all_datasets. \
+Additionally, it handles duplicates in text-annotator pairs, removing instances where inconsistencies occur.
 
+#### 3. Extract dataset statistics 
+```
+python extract_summary_statistics.py
+```
+Prints to output the statistics of the original datasets and of the corpus consisting of text-lemma-annotator triplets, extracted with the specified lexicon.
 
-#### Models of different sizes?
-*Consider models that can be run in float16 precision* \
-*Consider only models >= 4b and <= 40b \
+#### 4. Exploratory analysis into influence of sociodemographic on ratings of texts containing certain types of offensive words
+All the code for visualizations is included in `obtain_plots_text_pairwise.ipynb`.
 
-- **llama3**: unsloth/Llama-3.1-8B-Instruct / unsloth/Llama-3.1-70B -> Would have to run 70B version quantized
-- **gemma3**:  unsloth/gemma-3-4b-it, unsloth/gemma-3-12b-it, unsloth/gemma-3-27b-it -> does not support system prompt?
-- **qwen3**: unsloth/Qwen3-4B, unsloth/Qwen3-8B, unsloth/Qwen3-14B, unsloth/Qwen3-32B
+#### 5. GLMMs analysis
+All code to fit the models and to obtain the predicted proabilities for the analysis in the paper is contained in `sociodemographic_tag_analysis.R`. \
+For the visualizations, use the code in `sociodemographic_tag_plots.R`.
 
-
-#### TODO:
-Check some of the ones which look weird from the plots!
-Handle ties in aggregation step
-e.g. left annotating less offensive across most categories -> torna guardando i dati

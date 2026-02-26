@@ -96,7 +96,7 @@ ggsave(filename = save_path,
        dpi = 300)
 
 
-##### Tags
+##### TAGS PLOTS
 df <- read.csv("figures/glmm_results/tags.csv")
 
 color_chosen = "#009999"
@@ -122,7 +122,7 @@ ggsave(filename = save_path,
        dpi = 300)
 
 
-####### Sociodemographics and Hurtlex
+##### SOCIODEMOGRAPHIC-TAGS PLOTS
 # is_asf, race
 variable_name = "is_asf"
 group_var = "race"
