@@ -135,7 +135,7 @@ for (var in c("race", "gender", "age")) {
 
 cat("\nRemoved rare tag columns:", paste(rare_tags, collapse = ", "), "\n")
 
-# Assign reference level for each sociodemographic variable: -> man, 18-24, white
+# Assign reference level for each sociodemographic variable: -> man, 25-34, white
 df_wide_norare$gender <- relevel(df_wide_norare$gender, ref='man')
 df_wide_norare$age <- relevel(df_wide_norare$age, ref='25-34')
 df_wide_norare$race <- relevel(df_wide_norare$race, ref='white')
@@ -144,6 +144,9 @@ df_wide_norare$race <- relevel(df_wide_norare$race, ref='white')
 unique(df_wide_norare$gender)
 unique(df_wide_norare$age)
 unique(df_wide_norare$race)
+
+length(unique(df_wide_norare$annotator_id))
+length(unique(df_wide_norare$text_id))
 
 # Clean up memory
 rm(df, df_tags_merged, df_wide)
@@ -167,8 +170,6 @@ model1_socdem <- glmmTMB(
   data = df_wide_norare,
   family = binomial()
 )
-
-vif <- check_collinearity(model1_socdem)
 
 ### Sociodemographic intersectional model
 model2_socdem <- glmmTMB(
@@ -200,118 +201,118 @@ anova(model1_socdem, model0_socdem)
 #  and 77% in the intersectional one.
 
 ### Visualize marginal effects of sociodemographics, 
-rm(model0_socdem, model1_socdem)
+rm(model0_socdem, model1_socdem, model2_socdem)
 
 # Intersectional Marginal Effects of Race and Age on Offensiveness Perception.
 # The plot displays the predicted probability of a text being rated as offensive across race and age group for an average text.
 
-pr_socdem_raceage <- predict_response(model2_socdem, 
-                              terms = c("race", "age"), 
-                              margin = "average") 
+#pr_socdem_raceage <- predict_response(model2_socdem, 
+#                              terms = c("race", "age"), 
+#                              margin = "average") 
 # Save plot
-save_path = "figures/models/sociodemographics/raceage.png"
-
-p <- plot(pr_socdem_raceage)  # the ggeffects plot object
-p <- p + 
-  labs(title = NULL,            # remove title
-       x = "Race",
-       y = "Prob. of Offensive Rating") +
-  theme_minimal(base_size = 12)
-
-ggsave(filename = save_path,
-       plot = p,
-       width = 6.5,
-       height = 3.5,
-       dpi = 300)
-
-save_path = "figures/models/sociodemographics/racegender.png"
-pr_socdem_racegender <- predict_response(model2_socdem, 
-                              terms = c("race", "gender"), 
-                              margin = "average") 
-
-p <- plot(pr_socdem_racegender)  # the ggeffects plot object
-p <- p + 
-  labs(title = NULL,            # remove title
-       x = "Race",
-       y = "Prob. of Offensive Rating") +
-  theme_minimal(base_size = 12)
-
-ggsave(filename = save_path,
-       plot = p,
-       width = 6.5,
-       height = 3.5,
-       dpi = 300)
+# save_path = "figures/models/sociodemographics/raceage.png"
+# 
+# p <- plot(pr_socdem_raceage)  # the ggeffects plot object
+# p <- p + 
+#   labs(title = NULL,            # remove title
+#        x = "Race",
+#        y = "Prob. of Offensive Rating") +
+#   theme_minimal(base_size = 12)
+# 
+# ggsave(filename = save_path,
+#        plot = p,
+#        width = 6.5,
+#        height = 3.5,
+#        dpi = 300)
+# 
+# save_path = "figures/models/sociodemographics/racegender.png"
+# pr_socdem_racegender <- predict_response(model2_socdem, 
+#                               terms = c("race", "gender"), 
+#                               margin = "average") 
+# 
+# p <- plot(pr_socdem_racegender)  # the ggeffects plot object
+# p <- p + 
+#   labs(title = NULL,            # remove title
+#        x = "Race",
+#        y = "Prob. of Offensive Rating") +
+#   theme_minimal(base_size = 12)
+# 
+# ggsave(filename = save_path,
+#        plot = p,
+#        width = 6.5,
+#        height = 3.5,
+#        dpi = 300)
 
 # Cleanup memory
-rm(p, pr_socdem_raceage, pr_socdem_racegender, model2_socdem)
+# rm(p, pr_socdem_raceage, pr_socdem_racegender, model2_socdem)
 
 ### Analysis based on tags
 category_cols <- names(df_wide_norare)[grepl("^is_", names(df_wide_norare))]
 
 formula_str <- paste("label ~", paste(category_cols, collapse = " + "), 
-                     "+ (1 | annotator_id) + (1 | text_id)")
-
+                      "+ (1 | annotator_id) + (1 | text_id)")
+# 
 ### Null model ###
 model0_tags <- glmmTMB(label ~ 1 + (1|annotator_id) + (1 | text_id),
-                  data=df_wide_norare,
-                  family=binomial)
-
+                   data=df_wide_norare,
+                   family=binomial)
+ 
 ### Model with individual tags as fixed effects ### 
 model1_tags <- glmmTMB(as.formula(formula_str), 
-                       data = df_wide_norare, 
-                       family = binomial)
-
+                        data = df_wide_norare, 
+                        family = binomial)
+ 
 r2_0_tags <- r2(model0_tags)
 r2_1_tags <- r2(model1_tags)
-
+# 
 r2_table_tags <- data.frame(
   Model = c("Null", "Tags"),
   Marginal_R2 = c(r2_0_tags$R2_marginal, r2_1_tags$R2_marginal),
   Conditional_R2 = c(r2_0_tags$R2_conditional, r2_1_tags$R2_conditional)
 )
-
+# 
 r2_table_tags
 anova(model1_tags, model0_tags)
-#### Brief comment 
-# The tags variables account for approximately 5.6% of the variability while the random effects still account for majority of the variability.
-# This is larger than what we saw before.
+# #### Brief comment 
+# # The tags variables account for approximately 5.6% of the variability while the random effects still account for majority of the variability.
+# # This is larger than what we saw before.
+# 
+# # Cleanup memory
+rm(model0_tags, model1_tags)
 
-# Cleanup memory
-rm(model0_tags)
-
-#### Visualize
-# 1. Define the list of category terms from your model
-terms_to_plot <- category_cols
-
-# 2. Get predicted responses for each term being 'active' (1)
-# margin = "average" calculates the marginal effect over the population
-preds <- lapply(terms_to_plot, function(x) {
-  res <- predict_response(model1_tags, terms = x, margin = "average")
-  # Filter only for the '1' (active) state of the indicator
-  res <- as.data.frame(res) %>% filter(x == 1) 
-  res$term_name <- x
-  return(res)
-})
-
-plot_data <- bind_rows(preds)
-
-# 3. Create the plot and save
-save_path = "figures/models/tags/tags.png"
-ggsave(filename = save_path,
-       plot = ggplot(plot_data, aes(x = predicted, y = reorder(term_name, predicted))) +
-         geom_point(size = 3, color = "steelblue") +
-         geom_errorbarh(aes(xmin = conf.low, xmax = conf.high), height = 0.2) +
-         labs(title = "Adjusted Predicted Probabilities by Category",
-              subtitle = "Calculated using the Average Marginal Effect method",
-              y = "Category Indicator",
-              x = "Predicted Probability of Offensive Rating") +
-         theme_minimal(),
-       width = 6.5,
-       height = 3.5,
-       dpi = 300)
-
-# Cleanup memory
-rm(model1_tags, preds, plot_data)
+# #### Visualize
+# # 1. Define the list of category terms from your model
+# terms_to_plot <- category_cols
+# 
+# # 2. Get predicted responses for each term being 'active' (1)
+# # margin = "average" calculates the marginal effect over the population
+# preds <- lapply(terms_to_plot, function(x) {
+#   res <- predict_response(model1_tags, terms = x, margin = "average")
+#   # Filter only for the '1' (active) state of the indicator
+#   res <- as.data.frame(res) %>% filter(x == 1) 
+#   res$term_name <- x
+#   return(res)
+# })
+# 
+# plot_data <- bind_rows(preds)
+# 
+# # 3. Create the plot and save
+# save_path = "figures/models/tags/tags.png"
+# ggsave(filename = save_path,
+#        plot = ggplot(plot_data, aes(x = predicted, y = reorder(term_name, predicted))) +
+#          geom_point(size = 3, color = "steelblue") +
+#          geom_errorbarh(aes(xmin = conf.low, xmax = conf.high), height = 0.2) +
+#          labs(title = "Adjusted Predicted Probabilities by Category",
+#               subtitle = "Calculated using the Average Marginal Effect method",
+#               y = "Category Indicator",
+#               x = "Predicted Probability of Offensive Rating") +
+#          theme_minimal(),
+#        width = 6.5,
+#        height = 3.5,
+#        dpi = 300)
+# 
+# # Cleanup memory
+# rm(model1_tags, preds, plot_data)
 
 ### Joint analysis of sociodemographic and tags ### 
 formula_str_socdemtags <- paste("label ~", paste(category_cols, collapse = " + "), 
@@ -326,7 +327,6 @@ model0_socdemtags <- glmmTMB(label ~ 1 + (1|annotator_id) + (1 | text_id),
 model1_socdemtags <- glmmTMB(as.formula(formula_str_socdemtags), 
                              data = df_wide_norare, 
                              family = binomial)
-summary(model1_socdemtags)
 # We have too many categories to consider all interactions between categories and sociodemographic traits.
 # Choose which ones we want to include
 # OPTION 1: Hypothesis / Linguistic driven -> TODO: not enough time.
@@ -336,40 +336,45 @@ summary(model1_socdemtags)
 # is_asf -> 12.196
 # is_asm -> 10.219
 # is_cds -> 10.365
-formula_str_interax <- paste(
-  "label ~", 
-  paste(category_cols, collapse = " + "), # All tags as controls
-  "+ race * (gender + age)",              # Base intersectionality
-  "+ (is_pr + is_ps + is_asf + is_asm + is_cds) * race", # Sensitivity by Race
-  "+ (is_pr + is_ps + is_asf + is_asm + is_cds) * age",  # Sensitivity by Age
-  "+ (is_pr + is_ps + is_asf + is_asm + is_cds) * gender", # Sensitivity by Gender
-  "+ (1 | annotator_id) + (1 | text_id)"
-)
 
+# formula_str_interax <- paste(
+#   "label ~", 
+#   paste(category_cols, collapse = " + "), # All tags as controls
+#   "+ race * (gender + age)",              # Base intersectionality
+#   "+ (is_pr + is_ps + is_asf + is_asm + is_cds) * race", # Sensitivity by Race
+#   "+ (is_pr + is_ps + is_asf + is_asm + is_cds) * age",  # Sensitivity by Age
+#   "+ (is_pr + is_ps + is_asf + is_asm + is_cds) * gender", # Sensitivity by Gender
+#   "+ (1 | annotator_id) + (1 | text_id)"
+# )
+category_cols <- names(df_wide_norare)[grepl("^is_", names(df_wide_norare))]
+
+# Keep those from exploratory analysis.
 formula_str_interax_exploratory <- paste(
   "label ~", 
   paste(category_cols, collapse = " + "), # All tags as controls
   "+ race * (gender + age)",              # Base intersectionality
-  "+ (is_ddf + is_pa + is_is + is_ddp) * race", # Sensitivity by Race
-  "+ (is_asm + is_ddp + is_ps + is_asf) * age",  # Sensitivity by Age
+  "+ (is_ddf + is_pa + is_is) * age", # Sensitivity by Race
+  "+ (is_asm + is_asf + is_ddp + is_ps) * race",  # Sensitivity by Age
   "+ (1 | annotator_id) + (1 | text_id)"
 )
 
 
-model2_socdemtags <- glmmTMB(as.formula(formula_str_interax),
+#model2_socdemtags <- glmmTMB(as.formula(formula_str_interax),
+#                             data = df_wide_norare, 
+#                             family = binomial)
+#
+
+model2_socdemtags <- glmmTMB(as.formula(formula_str_interax_exploratory),
                              data = df_wide_norare, 
                              family = binomial)
 
-model2_socdemtags_datadriven <- glmmTMB(as.formula(formula_str_interax_exploratory),
-                             data = df_wide_norare, 
-                             family = binomial)
-
-vif_values <- check_collinearity(model2_socdemtags)
-vif_values
+# vif_values <- check_collinearity(model2_socdemtags)
+# vif_values
 
 r2_0_socdemtags <- r2(model0_socdemtags)
 r2_1_socdemtags <- r2(model1_socdemtags)
 r2_2_socdemtags <- r2(model2_socdemtags)
+
 
 r2_table_socdemtags <- data.frame(
   Model = c("Null", "SocdemTags", "SocdemTags_interaction"),
@@ -384,218 +389,293 @@ anova(model1_socdemtags, model2_socdemtags)
 
 rm(model1_socdemtags, model0_socdemtags)
 
-
-# is_pr gender
-plot_data <- predict_response(model2_socdemtags, 
-                              terms = c("is_pr [0,1]", "gender"), 
-                              margin = "average")
-# 1. Prepare data
-plot_df <- as.data.frame(plot_data)
-
-# Ensure 'x' (prostitution) is a factor for the x-axis
-plot_df$x <- factor(plot_df$x, levels = c(0, 1), labels = c("No Prostitution", "Prostitution"))
-
-# 2. Plotting: is_pr on X, Color by Gender, side-by-side
-p <- ggplot(plot_df, aes(x = x, y = predicted, color = group)) +
-  # position_dodge(width = 0.4) moves the man/woman points apart slightly
-  geom_point(size = 4, position = position_dodge(width = 0.4)) +
-  geom_errorbar(aes(ymin = conf.low, ymax = conf.high), 
-                width = 0.1, 
-                linewidth = 1,
-                position = position_dodge(width = 0.4)) +
-  # Match the Y-axis style from your reference
-  scale_y_continuous(labels = scales::percent_format(), limits = c(0, 1)) +
-  scale_color_manual(values = c("man" = "#e41a1c", "woman" = "#377eb8")) + # Red/Blue from image
-  labs(title = "Effect of Prostitution on Offensive Rating by Gender",
-       x = "Prostitution Tag",
-       y = "Prob. of Offensive Rating",
-       color = "Gender") +
-  theme_minimal() +
-  theme(panel.grid.minor = element_blank(),
-        axis.text = element_text(size = 12),
-        legend.position = "right")
-
-save_path = "figures/models/socdemtags/is_pr_gender.png"
-ggsave(filename = save_path,
-       plot = p,
-       width = 6.5,
-       height = 3.5,
-       dpi = 300)
-rm(p)
+rm(r2_0_socdem, r2_0_socdemtags, r2_0_tags, r2_1_tags, r2_1_socdem, r2_1_socdemtags, r2_2_socdem, r2_2_socdemtags)
 
 
-# is_pr age
-plot_data <- predict_response(model2_socdemtags, 
-                              terms = c("is_pr [0,1]", "age"), 
-                              margin = "average")
-# 1. Prepare data
-plot_df <- as.data.frame(plot_data)
+## Plot sociodemographics: 
+### race vs age
+save_path = "figures/glmm_results/race_age.pdf"
+save_df_path = "figures/glmm_results/race_age.csv"
+if (!dir.exists(dirname(save_df_path))) {
+  dir.create(dirname(save_path), recursive = TRUE)
+}
+pr_socdem_raceage <- predict_response(model2_socdemtags,
+                             terms = c("race", "age"),
+                             margin = "average")
+df_clean <- pr_socdem_raceage %>%
+  as_tibble() %>%
+  select(
+    race = x, 
+    age = group, 
+    predicted, 
+    lower = conf.low, 
+    upper = conf.high
+  )
 
-# Ensure 'x' (prostitution) is a factor for the x-axis
-plot_df$x <- factor(plot_df$x, levels = c(0, 1), labels = c("No Prostitution", "Prostitution"))
+write.csv(df_clean, save_df_path, row.names = FALSE)
 
-# 2. Plotting: is_pr on X, Color by Age, side-by-side
-p <- ggplot(plot_df, aes(x = x, y = predicted, color = group)) +
-  # position_dodge(width = 0.4) moves the man/woman points apart slightly
-  geom_point(size = 4, position = position_dodge(width = 0.4)) +
-  geom_errorbar(aes(ymin = conf.low, ymax = conf.high), 
-                width = 0.1, 
-                linewidth = 1,
-                position = position_dodge(width = 0.4)) +
-  # Match the Y-axis style from your reference
-  scale_y_continuous(labels = scales::percent_format(), limits = c(0, 1)) +
-  scale_color_manual(values = c(
-    "18-24" = "#4E79A7",  # Blue
-    "25-34" = "#F28E2B",  # Orange
-    "35-44" = "#59A14F",  # Green
-    "45-54" = "#E15759",  # Red
-    "55-64" = "#B07AA1"   # Purple
-  )) +
-  labs(title = "Effect of Prostitution on Offensive Rating by Age",
-       x = "Prostitution Tag",
-       y = "Prob. of Offensive Rating",
-       color = "Age") +
-  theme_minimal() +
-  theme(panel.grid.minor = element_blank(),
-        axis.text = element_text(size = 12),
-        legend.position = "right")
+# p <- ggplot(df_clean, aes(x = race, y = predicted, color = age, group = age)) +
+#   geom_errorbar(
+#     aes(ymin = lower, ymax = upper), 
+#     linewidth = 1.5, 
+#     width = 0.4, 
+#     position = position_dodge(width = 0.7)
+#   ) +
+#   geom_point(
+#     position = position_dodge(width = 0.7), 
+#     size = 6
+#   ) +
+#   theme_minimal() + 
+#   theme(
+#     legend.position = "top",
+#     legend.box = "horizontal",
+#     # Axis and Title sizing
+#     axis.title = element_text(size = 22, face = "bold"),
+#     axis.text = element_text(size = 18, color = "black"),
+#     plot.title = element_text(size = 26, face = "bold", hjust = 0.5),
+#     legend.text = element_text(size = 16),
+#     legend.title = element_text(size = 18, face = "bold")
+#   ) +
+#   scale_color_brewer(palette = "Dark2") +
+#   labs(
+#     x = "Race",
+#     y = "Predicted Probability",
+#     color = "Age"
+#   ) +
+#   # Force the legend into 2 rows
+#   guides(color = guide_legend(nrow = 2, byrow = TRUE))
+# 
+# ggsave(filename = save_path,
+#        plot = p,
+#        width = 8,
+#        height = 5,
+#        dpi = 300)
 
-save_path = "figures/models/socdemtags/is_pr_age.png"
-ggsave(filename = save_path,
-       plot = p,
-       width = 6.5,
-       height = 3.5,
-       dpi = 300)
-rm(p)
+### race vs gender
+rm(pr_socdem_raceage, p)
+save_path = "figures/glmm_results/race_gender.pdf"
+save_df_path = "figures/glmm_results/race_gender.csv"
+if (!dir.exists(dirname(save_df_path))) {
+  dir.create(dirname(save_path), recursive = TRUE)
+}
+pr_socdem_racegender <- predict_response(model2_socdemtags,
+                                      terms = c("race", "gender"),
+                                      margin = "average")
 
-#is_asf age 
-plot_data <- predict_response(model2_socdemtags, 
-                              terms = c("is_asf [0,1]", "age"), 
-                              margin = "average")
-# 1. Prepare data
-plot_df <- as.data.frame(plot_data)
+df_clean <- pr_socdem_racegender %>%
+  as_tibble() %>%
+  select(
+    race = x, 
+    gender = group, 
+    predicted, 
+    lower = conf.low, 
+    upper = conf.high
+  )
 
-# Ensure 'x' (prostitution) is a factor for the x-axis
-plot_df$x <- factor(plot_df$x, levels = c(0, 1), labels = c("No Female Genitalia", "Female Genitalia"))
+write.csv(df_clean, save_df_path, row.names=FALSE)
 
-# 2. Plotting: is_asf on X, Color by Age, side-by-side
-p <- ggplot(plot_df, aes(x = x, y = predicted, color = group)) +
-  # position_dodge(width = 0.4) moves the man/woman points apart slightly
-  geom_point(size = 4, position = position_dodge(width = 0.4)) +
-  geom_errorbar(aes(ymin = conf.low, ymax = conf.high), 
-                width = 0.1, 
-                linewidth = 1,
-                position = position_dodge(width = 0.4)) +
-  # Match the Y-axis style from your reference
-  scale_y_continuous(labels = scales::percent_format(), limits = c(0, 1)) +
-  # scale_color_manual(values = c("man" = "#e41a1c", "woman" = "#377eb8")) + # Red/Blue from image
-  scale_color_manual(values = c(
-    "18-24" = "#4E79A7",  # Blue
-    "25-34" = "#F28E2B",  # Orange
-    "35-44" = "#59A14F",  # Green
-    "45-54" = "#E15759",  # Red
-    "55-64" = "#B07AA1"   # Purple
-  )) + 
-  labs(title = "Effect of Female Genitalia on Offensive Rating by Age",
-       x = "Female Genitalia Tag",
-       y = "Prob. of Offensive Rating",
-       color = "Age") +
-  theme_minimal() +
-  theme(panel.grid.minor = element_blank(),
-        axis.text = element_text(size = 12),
-        legend.position = "right")
-
-save_path = "figures/models/socdemtags/is_asf_age.png"
-ggsave(filename = save_path,
-       plot = p,
-       width = 6.5,
-       height = 3.5,
-       dpi = 300)
-rm(p)
-
-#is_asm race
-plot_data <- predict_response(model2_socdemtags, 
-                              terms = c("is_asm [0,1]", "race"), 
-                              margin = "average")
-# 1. Prepare data
-plot_df <- as.data.frame(plot_data)
-
-# Ensure 'x' (male genitalia) is a factor for the x-axis
-plot_df$x <- factor(plot_df$x, levels = c(0, 1), labels = c("No Male Genitalia", "Male Genitalia"))
-
-# 2. Plotting: is_asf on X, Color by Age, side-by-side
-p <- ggplot(plot_df, aes(x = x, y = predicted, color = group)) +
-  # position_dodge(width = 0.4) moves the man/woman points apart slightly
-  geom_point(size = 4, position = position_dodge(width = 0.4)) +
-  geom_errorbar(aes(ymin = conf.low, ymax = conf.high), 
-                width = 0.1, 
-                linewidth = 1,
-                position = position_dodge(width = 0.4)) +
-  # Match the Y-axis style from your reference
-  scale_y_continuous(labels = scales::percent_format(), limits = c(0, 1)) +
-  scale_color_manual(values = c(
-    "white" = "#E15759",  # Red
-    "asian" = "#4E79A7",  # Blue
-    "black" = "#59A14F"   # Green
-  )) +
-  labs(title = "Effect of Male Genitalia on Offensive Rating by Race",
-       x = "Male Genitalia Tag",
-       y = "Prob. of Offensive Rating",
-       color = "Race") +
-  theme_minimal() +
-  theme(panel.grid.minor = element_blank(),
-        axis.text = element_text(size = 12),
-        legend.position = "right")
-
-save_path = "figures/models/socdemtags/is_asm_race.png"
-ggsave(filename = save_path,
-       plot = p,
-       width = 6.5,
-       height = 3.5,
-       dpi = 300)
-
-rm(p)
-
-#is_ps gender
-plot_data <- predict_response(model2_socdemtags, 
-                              terms = c("is_ps [0,1]", "gender"), 
-                              margin = "average")
-# 1. Prepare data
-plot_df <- as.data.frame(plot_data)
-
-# Ensure 'x' (prostitution) is a factor for the x-axis
-plot_df$x <- factor(plot_df$x, levels = c(0, 1), labels = c("No Prostitution", "Prostitution"))
-
-# 2. Plotting: is_ps on X, Color by Gender, side-by-side
-p <- ggplot(plot_df, aes(x = x, y = predicted, color = group)) +
-  # position_dodge(width = 0.4) moves the man/woman points apart slightly
-  geom_point(size = 4, position = position_dodge(width = 0.4)) +
-  geom_errorbar(aes(ymin = conf.low, ymax = conf.high), 
-                width = 0.1, 
-                linewidth = 1,
-                position = position_dodge(width = 0.4)) +
-  # Match the Y-axis style from your reference
-  scale_y_continuous(labels = scales::percent_format(), limits = c(0, 1)) +
-  scale_color_manual(values = c("man" = "#e41a1c", "woman" = "#377eb8")) + # Red/Blue from image
-  labs(title = "Effect of Prostitution on Offensive Rating by Gender",
-       x = "Prostitution Tag",
-       y = "Prob. of Offensive Rating",
-       color = "Gender") +
-  theme_minimal() +
-  theme(panel.grid.minor = element_blank(),
-        axis.text = element_text(size = 12),
-        legend.position = "right")
-
-save_path = "figures/models/socdemtags/is_ps_gender.png"
-ggsave(filename = save_path,
-       plot = p,
-       width = 6.5,
-       height = 3.5,
-       dpi = 300)
-
-rm(p)
+# p <- ggplot(df_clean, aes(x = race, y = predicted, color = age, group = age)) +
+#   geom_errorbar(
+#     aes(ymin = lower, ymax = upper), 
+#     linewidth = 1.5, 
+#     width = 0.4, 
+#     position = position_dodge(width = 0.7)
+#   ) +
+#   geom_point(
+#     position = position_dodge(width = 0.7), 
+#     size = 6
+#   ) +
+#   theme_minimal() + 
+#   theme(
+#     legend.position = "top",
+#     legend.box = "horizontal",
+#     # Axis and Title sizing
+#     axis.title = element_text(size = 22, face = "bold"),
+#     axis.text = element_text(size = 18, color = "black"),
+#     plot.title = element_text(size = 26, face = "bold", hjust = 0.5),
+#     legend.text = element_text(size = 16),
+#     legend.title = element_text(size = 18, face = "bold")
+#   ) +
+#   scale_color_brewer(palette = "Dark2") +
+#   labs(
+#     x = "Race",
+#     y = "Predicted Probability",
+#     color = "Gender"
+#   ) +
+#   # Force the legend into 2 rows
+#   guides(color = guide_legend(nrow = 2, byrow = TRUE))
+# 
+# ggsave(filename = save_path,
+#        plot = p,
+#        width = 8,
+#        height = 5,
+#        dpi = 300)
 
 
+### Plot tags:
+#### Visualize
+# 1. Define the list of category terms from your model
+terms_to_plot <- category_cols
+
+# 2. Get predicted responses for each term being 'active' (1)
+# margin = "average" calculates the marginal effect over the population
+preds <- lapply(terms_to_plot, function(x) {
+  res <- predict_response(model2_socdemtags, terms = x, margin = "average")
+  # Filter only for the '1' (active) state of the indicator
+  res <- as.data.frame(res) %>% filter(x == 1) 
+  res$term_name <- x
+  return(res)
+})
+
+plot_data <- bind_rows(preds)
+
+# 3. Create the plot and save
+save_path = "figures/models/tags/tags.png"
+save_df_path = "figures/glmm_results/tags.csv"
+if (!dir.exists(dirname(save_df_path))) {
+  dir.create(dirname(save_path), recursive = TRUE)
+}
+
+# ggsave(filename = save_path,
+#        plot = ggplot(plot_data, aes(x = predicted, y = reorder(term_name, predicted))) +
+#          geom_point(size = 3, color = "forestgreen") +
+#          geom_errorbarh(aes(xmin = conf.low, xmax = conf.high), height = 0.2) +
+#          labs(title = "Adjusted Predicted Probabilities by Category",
+#               subtitle = "Calculated using the Average Marginal Effect method",
+#               y = "Category Indicator",
+#               x = "Predicted Probability of Offensive Rating") +
+#          theme_minimal(),
+#        width = 8,
+#        height = 5,
+#        dpi = 300)
+write.csv(plot_data, save_df_path, row.names = FALSE)
+
+
+# Prediction function
+predict_socdem_effect <- function(variable_name, group_var, save_df_path){
+  plot_data <- predict_response(model2_socdemtags,
+                                terms = c(paste0(variable_name, " [0,1]"), group_var), 
+                                margin = "average")
+                                   
+  plot_df <- as.data.frame(plot_data)
+  
+  plot_df$x <- factor(plot_df$x, levels = c(0, 1), labels = c("Other", variable_name))
+  
+  write.csv(plot_df, save_df_path, row.names = FALSE)
+}
+
+# is_asf, race
+variable_name = "is_asf"
+group_var = "race"
+save_df_path <- paste0("figures/glmm_results/", variable_name, "_", group_var, ".csv")
+predict_socdem_effect(variable_name, group_var, save_df_path)
+
+
+# is_asm, race
+variable_name = "is_asm"
+group_var = "race"
+save_df_path <- paste0("figures/glmm_results/", variable_name, "_", group_var, ".csv")
+predict_socdem_effect(variable_name, group_var, save_df_path)
+
+# is_ddp, race
+variable_name = "is_ddp"
+group_var = "race"
+save_df_path <- paste0("figures/glmm_results/", variable_name, "_", group_var, ".csv")
+predict_socdem_effect(variable_name, group_var, save_df_path)
+
+
+# is_ps, race
+variable_name = "is_ps"
+group_var = "race"
+save_df_path <- paste0("figures/glmm_results/", variable_name, "_", group_var, ".csv")
+predict_socdem_effect(variable_name, group_var, save_df_path)
+
+# is_ddf, age
+variable_name = "is_ddf"
+group_var = "age"
+save_df_path <- paste0("figures/glmm_results/", variable_name, "_", group_var, ".csv")
+predict_socdem_effect(variable_name, group_var, save_df_path)
+
+# is_is, age
+variable_name = "is_is"
+group_var = "age"
+save_df_path <- paste0("figures/glmm_results/", variable_name, "_", group_var, ".csv")
+predict_socdem_effect(variable_name, group_var, save_df_path)
+
+# is_pa, age
+variable_name = "is_pa"
+group_var = "age"
+save_df_path <- paste0("figures/glmm_results/", variable_name, "_", group_var, ".csv")
+predict_socdem_effect(variable_name, group_var, save_df_path)
+
+
+
+# plot_socdem_effect <- function(variable_name, group_var, color_values, title_text) {
+#   
+#   # Predict responses
+#   plot_data <- predict_response(model2_socdemtags, 
+#                                 terms = c(paste0(variable_name, " [0,1]"), group_var), 
+#                                 margin = "average")
+#   
+#   plot_df <- as.data.frame(plot_data)
+#   
+#   # Format X-axis labels
+#   plot_df$x <- factor(plot_df$x, levels = c(0, 1), labels = c("Other", variable_name))
+#   
+#   # Create Plot
+#   p <- ggplot(plot_df, aes(x = x, y = predicted, color = group)) +
+#     geom_point(size = 4, position = position_dodge(width = 0.4)) +
+#     geom_errorbar(aes(ymin = conf.low, ymax = conf.high), 
+#                   width = 0.1, 
+#                   linewidth = 1,
+#                   position = position_dodge(width = 0.4)) +
+#     scale_y_continuous(labels = scales::percent_format(), limits = c(0, 1)) +
+#     scale_color_manual(values = color_values) +
+#     labs(title = title_text,
+#          x = paste(variable_name, "Tag"),
+#          y = "Prob. of Offensive Rating",
+#          color = tools::toTitleCase(group_var)) +
+#     theme_minimal() +
+#     theme(panel.grid.minor = element_blank(),
+#           axis.text = element_text(size = 12),
+#           legend.position = "right")
+#   
+#   # Save
+#   save_path <- paste0("figures/glmm_analysis/socdemtags/", variable_name, "_", group_var, ".png")
+#   ggsave(filename = save_path, plot = p, width = 6.5, height = 3.5, dpi = 300)
+#   
+#   return(p)
+# }
+
+# # --- 2. Define Color Scales ---
+# colors_gender <- c("man" = "#e41a1c", "woman" = "#377eb8")
+# colors_age    <- c("18-24" = "#4E79A7", "25-34" = "#F28E2B", "35-44" = "#59A14F", "45-54" = "#E15759", "55-64" = "#B07AA1")
+# colors_race   <- c("white" = "#E15759", "asian" = "#4E79A7", "black" = "#59A14F")
+# 
+# # --- 3. Run the requests ---
+# 
+# # is_ddp vs race
+# plot_socdem_effect("is_ddp", "race", colors_race, "Effect of is_ddp on Offensive Rating by Race")
+# # is_ddp vs age
+# plot_socdem_effect("is_ddp", "age",  colors_age,  "Effect of is_ddp on Offensive Rating by Age")
+# 
+# # is_ps vs age
+# plot_socdem_effect("is_ps", "age", colors_age, "Effect of is_ps on Offensive Rating by Age")
+# 
+# # is_is vs race
+# plot_socdem_effect("is_is", "race", colors_race, "Effect of is_is on Offensive Rating by Race")
+# 
+# # is_asm vs age
+# plot_socdem_effect("is_asm", "age", colors_age, "Effect of is_asm on Offensive Rating by Age")
+# # is_asf vs age
+# plot_socdem_effect("is_asf", "age", colors_age, "Effect of is_asf on Offensive Rating by Age")
+# 
+# # is_pa vs race
+# plot_socdem_effect("is_pa", "race", colors_race, "Effect of is_pa on Offensive Rating by Race")
+# # is_ddf vs race
+# plot_socdem_effect("is_ddf", "race", colors_race, "Effect of is_ddf on Offensive Rating by Race")
+# 
+# 
 
 
 

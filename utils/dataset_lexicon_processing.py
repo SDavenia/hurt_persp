@@ -8,6 +8,7 @@ import ast
 import nltk
 import emoji
 import pandas as pd
+import spacy
 
 from nltk.stem import WordNetLemmatizer, PorterStemmer
 from nltk.tokenize import word_tokenize
@@ -18,6 +19,16 @@ nltk.download("punkt")
 nltk.download("averaged_perceptron_tagger")
 nltk.download("wordnet")
 nltk.download("omw-1.4")
+
+POS_SHORT_TO_UPOS = {
+    'n': 'NOUN',
+    'v': 'VERB',
+    'a': 'ADJ',
+    'r': 'ADV'
+}
+
+UPOS_TO_SHORT = {v: k for k, v in POS_SHORT_TO_UPOS.items()}
+
 
 # Dictionary containing text column name, label column name and sociodemographics column name for each dataset.
 # Sociodemographics columns is either:
@@ -261,8 +272,47 @@ class StandardDataset:
                 new_text += char
         return new_text, emojis
     
-
     def _add_words_stems_lemmas_column(self):
+        """spacy version"""
+        nlp = spacy.load("en_core_web_sm", disable=["ner", "parser"])  # Disable NER and parser for faster processing since we don't need them
+        stemmer = PorterStemmer()
+        # lemmatizer = nlp.get_pipe("lemmatizer")
+        lemmas_list = []
+        lemmas_with_pos_list = []
+        words_list = []
+        stems_list = []
+
+        for i, text in enumerate(self.dataset['text_noemoji']):
+            if i % 10000 == 0:
+                print(f"Processing text {i}/{len(self.dataset)}")
+
+            doc = nlp(text.lower().strip())
+            
+            tokens = [token.text for token in doc if token.is_alpha or token.like_num]
+            words_list.append(tokens)
+            stems_list.append([stemmer.stem(t) for t in tokens])
+
+            all_forms = set()
+            for token in doc:
+                if not (token.is_alpha or token.like_num):
+                    continue
+
+                lemma = token.lemma_
+                # Map spaCy's UPOS to your short POS notation
+                pos_short = UPOS_TO_SHORT.get(token.pos_, None)
+                all_forms.add((lemma, pos_short))
+
+            lemmas_list.append([lemma for lemma, pos in all_forms])
+            lemmas_with_pos_list.append(list(all_forms))
+
+        self.dataset['lemmas'] = [set(x) for x in lemmas_list]
+        self.dataset['lemmas_with_pos'] = [set(x) for x in lemmas_with_pos_list]
+        self.dataset['words'] = [set(x) for x in words_list]
+        self.dataset['stems'] = [set(x) for x in stems_list]
+    
+
+    """def _add_words_stems_lemmas_column(self):
+        # nltk version
         # lowercase -> tokenize -> compute pos -> lemmatize 
         # Adds a column with (lemma, pos) for each token in the text, needed for matching later.
         
@@ -332,7 +382,7 @@ class StandardDataset:
         self.dataset['lemmas'] = [set(x) for x in lemmas_list]
         self.dataset['lemmas_with_pos'] = [set(x) for x in lemmas_with_pos_list]
         self.dataset['words'] = [set(x) for x in words_list]
-        self.dataset['stems'] = [set(x) for x in stems_list]
+        self.dataset['stems'] = [set(x) for x in stems_list]"""
 
     def _preprocess_dataset(self):
         if self.preprocess_fns:
@@ -470,7 +520,11 @@ class StandardLexicon:
         self.lexicon_info = lexicon_info[lexicon_id]
         self.lexicon = self._load_lexicon()
 
-        self.lemmatizer = WordNetLemmatizer()
+        self.nlp = spacy.load("en_core_web_sm")
+        self.lemmatizer = self.nlp.get_pipe("lemmatizer")
+        
+
+        # self.lemmatizer = WordNetLemmatizer()
         self.stemmer = PorterStemmer()
 
         # Preprocess the lexicon:
@@ -480,7 +534,7 @@ class StandardLexicon:
         print(f"Lexicon ID: {self.lexicon_id}")
         print(f"Lexicon Path: {self.lexicon_path}")
         print(f"Lexicon Info: {self.lexicon_info}")
-        print(f"Lexicon Sample:\n{self.lexicon.head(5)}")
+        print(f"Lexicon Sample:\n{self.lexicon.head(10)}")
 
     def _load_lexicon(self):
         """Load lexicon from file based on configuration"""
@@ -537,9 +591,21 @@ class StandardLexicon:
         self.lexicon['word'] = self.lexicon['word'].str.strip()
         multiple_word_entries = self.lexicon[self.lexicon['word'].str.contains(' ')]
         print(f"Removing {len(multiple_word_entries)} entries that are multiple words.")
+        dashed_word_entries = self.lexicon[self.lexicon['word'].str.contains('-')]
+        print(f"Removing {len(dashed_word_entries)} entries that are dashed words.")
         self.lexicon = self.lexicon[~self.lexicon['word'].str.contains(' ')]
+        self.lexicon = self.lexicon[~self.lexicon['word'].str.contains('-')]
     
     def _return_base_lemma(self, token, pos=None):
+        # Spacy version
+        doc = self.nlp.make_doc(token)
+        doc[0].pos_ = POS_SHORT_TO_UPOS.get(pos, 'NOUN') if pos else 'NOUN'
+        doc = self.lemmatizer(doc)
+        return doc[0].lemma_
+
+
+    """def _return_base_lemma(self, token, pos=None):
+        # nltk version
         if pos:
             lemma = self.lemmatizer.lemmatize(token, pos=pos)
             return lemma 
@@ -553,7 +619,7 @@ class StandardLexicon:
             elif wn.morphy(token, pos=fallback_pos) == token:
                 lemma = token
                 return lemma
-        return token
+        return token"""
     
     def _remove_duplicates(self, match_by):
         # There can be multiple rows with same lemma_with_pos but different tags, so we merge them by grouping by lemma_with_pos and merging the tags into a set.

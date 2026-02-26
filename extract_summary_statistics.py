@@ -2,7 +2,6 @@ import pandas as pd
 from utils.dataset_lexicon_processing import StandardDataset
 
 dataset_paths = {
-    # 'mhs': 'data/datasets/mhs/data.csv'
     'annWithAttitudes': 'data/datasets/annWithAttitudes/data.csv',
     'voiced': 'data/datasets/voiced/data.csv',
     'sbic': 'data/datasets/sbic/data.csv',
@@ -19,7 +18,7 @@ def main():
         standard_dataset = StandardDataset(dataset_id=dataset_id, dataset_path=dataset_path, preprocess=False)
 
         num_annotations = len(standard_dataset.dataset)
-        num_offensive_annotations = sum(standard_dataset.dataset['label'] == 'hurtful')
+        # num_offensive_annotations = sum(standard_dataset.dataset['label'] == 'hurtful')
         # num_non_offensive_annotations = sum(standard_dataset.dataset['label'] == 'not hurtful')
         num_unique_annotators = len(set(standard_dataset.dataset["annotator_id"]))   
         num_unique_texts = len(set(standard_dataset.dataset["text_id"]))   
@@ -48,7 +47,7 @@ def main():
 
         print(f"Number of text-lemma-annotation triplets extracted: {num_instances_extracted}")
         print(f"Number of unique texts extracted: {num_unique_texts_extracted} (coverage: {round(num_unique_texts_extracted / num_unique_texts, 2)*100}%)")
-        print(f"Number of unique offensive texts extracted: {num_offensive_texts_extracted} (coverage: {round(num_offensive_texts_extracted / len(offensive_texts), 2)*100}%)")
+        print(f"Number of unique offensive texts extracted: {num_offensive_texts_extracted} (coverage: {round(num_offensive_texts_extracted / num_unique_texts_extracted, 2)*100}%)")
         print(f"Number of unique annotators extracted:  {num_unique_annotators_extracted} (coverage: {round(num_unique_annotators_extracted / num_unique_annotators, 2)*100}%)")
         
     

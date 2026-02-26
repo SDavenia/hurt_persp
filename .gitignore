@@ -21,6 +21,8 @@ data/extracted_examples/
 
 # Misc
 try.ipynb
+view.ipynb
+extracted_examples_nltk
 
 # Old plotting
 obtain_plots_text_radar.ipynb
@@ -28,3 +30,4 @@ obtain_plots_text_radar.ipynb
 # Old R files
 sociodemographic_analysis.R
 tag_analysis.R
+.Rhistory

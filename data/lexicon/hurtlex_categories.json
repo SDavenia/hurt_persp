@@ -15,5 +15,6 @@
     "qas": "with potential negative connotations",
     "cds": "derogatory words",
     "re": "felonies and words related to crime and immoral behavior",
-    "svp": "words related to the seven deadly sins of the Christian tradition"
+    "svp": "words related to the seven deadly sins of the Christian tradition",
+    "sex": "words related to sexual acts"
 }
