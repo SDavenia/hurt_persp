@@ -1,5 +1,5 @@
 ### Hurt Persp
-Repository for the paper "HurtLens: A Perspectivist Corpus Analysis of Hurtful Language Across Sociodemographic Perspectives".
+Repository for the paper "HurtLens: A Perspectivist Corpus Analysis of Hurtful Language".
 
 #### 0. Initial setup
 Create a `.env` file with HF valid key.
